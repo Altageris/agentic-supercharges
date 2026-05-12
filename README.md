@@ -1,44 +1,36 @@
 # Agentic Supercharges
 
-Custom Claude Code skills for architectural and design validation in high-stakes development environments.
+Custom Claude Code skills for high-velocity development.
 
 ## Skills
 
-### three-turn-design
-Compresses UI/design work into exactly 3 user-facing turns: Diagnose → Compose → Ship.
-- Requires `design-defaults.md` with binding rules
-- Delivers mockups, spec, and implementation in single session
-- Ideal for museum display, real-time systems, visual-heavy features
+| Skill | Purpose | Turns |
+|-------|---------|-------|
+| **three-turn-design** | UI/visual work shipping | 3 |
+| **three-turn-architecture** | Architectural decisions | 3 |
+| **four-turn-architecture** | Complex multi-layer systems | 4 |
 
-### three-turn-architecture
-Compresses architectural decisions into exactly 3 user-facing turns: Survey → Spec → Skeleton+Slice.
-- Requires `architecture-defaults.md` with binding invariants
-- Delivers typed interfaces, sequence diagrams, failure modes
-- Ideal for boundary-crossing changes, state ownership, failure-mode analysis
+## Install
 
-### four-turn-architecture
-Extended architecture skill for complex multi-layer systems.
-- One additional turn for elaborate specifications
-- Suited for distributed systems, complex state machines
-- Same contract-first approach as three-turn-architecture
+Copy skills to `~/.claude/skills/`:
+```bash
+cp -r three-turn-* ~/.claude/skills/
+cp -r four-turn-* ~/.claude/skills/
+```
 
-## Usage
+Invoke in Claude Code: `/three-turn-design`, `/three-turn-architecture`, etc.
 
-Copy skills to `~/.claude/skills/` and invoke via `/skill-name` in Claude Code.
+## Each Skill Includes
 
-Each skill includes:
-- `SKILL.md` — formal skill definition
-- `*-defaults-template.md` — required preferences file template
-- `tests/` — observation logs, scenarios, test results
-- `README.md` — usage guide and examples
+- `SKILL.md` — formal definition
+- `*-defaults-template.md` — required preferences
+- `tests/` — observation logs & scenarios
+- `companion/` — visual rendering (architecture skills)
 
-## Observation Logs
+## Usage Notes
 
-Test results and effectiveness metrics are stored in each skill's `tests/` directory:
-- `observation-log.md` — session effectiveness metrics
-- `scenario-*.md` — test scenarios and results
+All skills require a `*-defaults.md` file in your project (or home directory) with binding preferences/invariants. Templates provided in each skill directory.
 
 ---
 
-**Created:** 2026-05-12  
-**Author:** Altageris / AI-CCORE
+**Tested in production.** See test scenarios and observation logs for effectiveness metrics.
