@@ -91,7 +91,7 @@ Identical to `three-turn-architecture` Turn 2 (renumbered). See parent skill for
 3. Render consolidated spec via the companion (`turn: 2` JSON form — companion JSON schema unchanged from parent).
 4. Write spec to `docs/architecture/specs/YYYY-MM-DD-<topic>-arch.md`.
 5. Park 5–10 sub-decisions.
-6. Ask: "Ship slice, ship skeleton-only, or one tweak?"
+6. Ask the **4-option commitment ladder** (same as parent skill): **"Ship slice / Ship skeleton, defer slice / Ship spec, defer code / Tweak first?"** See `three-turn-architecture/SKILL.md` Turn 2 step 6 for the full ladder table and rationale.
 
 The spec MUST cite the Turn 2 verification findings (in a "Verified contract" section) so downstream readers can see what was checked and what corrections were applied.
 

@@ -8,7 +8,8 @@ Custom Claude Code skills for high-velocity development.
 |-------|---------|-------|
 | **three-turn-design** | UI/visual work shipping | 3 |
 | **three-turn-architecture** | Architectural decisions | 3 |
-| **four-turn-architecture** | Complex multi-layer systems | 4 |
+| **four-turn-architecture** | Architectural decisions with a dedicated Turn 2 rigor checkpoint (experimental sibling of three-turn-architecture) | 4 |
+| **anonymize** | Transform production code/docs into reusable educational examples — used as a companion when sharing skill observation logs or examples publicly | n/a |
 
 ## Install
 
@@ -16,6 +17,7 @@ Copy skills to `~/.claude/skills/`:
 ```bash
 cp -r three-turn-* ~/.claude/skills/
 cp -r four-turn-* ~/.claude/skills/
+cp -r anonymize ~/.claude/skills/
 ```
 
 Invoke in Claude Code: `/three-turn-design`, `/three-turn-architecture`, etc.

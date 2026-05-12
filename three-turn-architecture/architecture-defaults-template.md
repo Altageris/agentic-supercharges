@@ -82,6 +82,17 @@ Per-project files override the home file when both exist.
 - [ ] Load test (or budget estimate) when perf envelope is non-trivial
 - [ ] Chaos test (timeout / dropped connection) when failure-mode discipline says so
 
+## Typed-interface discipline
+
+> Rules that the Turn 1 typed-interface panel and the example code MUST follow. Surfaced because of repeated drift across dogfood runs (Map/object access-pattern mismatch in Run 02 and Run 03 both shipped with `build_count: 2`).
+
+- [ ] **Map/Set primitives:** if the interface declares `Map<K, V>` or `Set<T>`, the example code MUST use `.get(k)`, `.set(k, v)`, `.has(k)`, `.delete(k)`, `.add(t)` — never `obj[k]` indexing. The interface declaration and the example code must be string-consistent so a reader can see the same access pattern in both.
+- [ ] **Generic types:** if the interface uses generics, the example must instantiate them — `Map<"blue" | "red", BattleAction[]>` is not "obvious"; show `.get("blue")` returning `BattleAction[] | undefined` so the optional handling is visible.
+- [ ] **Ref-based state (React/hooks):** if state lives in a `useRef`, the example must show `ref.current.<method>` access. Never elide `.current`.
+- [ ] **Async returns:** if the interface returns `Promise<T>`, the example must show the `await` or `.then()` — never write synchronous-style code against an async signature.
+
+When the agent's Turn 1 interface and example disagree, that is the canonical Turn-1-rigor failure that propagates into the build as `build_count > 1`. Pre-check before sending Turn 1.
+
 ## Build-count discipline
 
 > Build count in Turn 3 is a leading indicator of Turn 1 rigor — clean typed interfaces in Turn 1 build clean in Turn 3.

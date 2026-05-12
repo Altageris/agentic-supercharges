@@ -83,7 +83,16 @@ After the user picks (or pushes back once, which counts as Turn 1 redux):
    Components, typed interfaces, data flow, failure modes, perf envelope, migration path (parallel-run window + flag name + cutover trigger), slice plan all live in this single rendered view.
 4. Write the spec to `docs/architecture/specs/YYYY-MM-DD-<topic>-arch.md`.
 5. Park 5–10 sub-decisions as tickets in the spec (cache eviction policy, exact retry curves, dashboard layouts, log field names, alert thresholds).
-6. Ask **one** question: "Ship slice, ship skeleton-only, or one tweak?"
+6. Ask **one** question — the **4-option commitment ladder**: **"Ship slice / Ship skeleton, defer slice / Ship spec, defer code / Tweak first?"**
+
+   | Choice | What ships | Commitment level |
+   |---|---|---|
+   | Ship slice | Spec + skeleton + one vertical thread end-to-end | ▮▮▮▮ Most |
+   | Ship skeleton, defer slice | Spec + typed stubs + no-op handlers (types compile, nothing runs) | ▮▮▮ |
+   | Ship spec, defer code | Spec doc only, zero code touched | ▮▮ |
+   | Tweak first | Modify spec/sketch, re-evaluate before committing | ▮ Pre-commit |
+
+   The ladder makes the commitment level explicit so the user does not invent off-menu hybrids (Run 03 dogfood evidence: user replied "A x B" to the old 3-option menu because they didn't see that slice ⊃ skeleton). "Push back / redesign the fork" is covered as free-text under "Tweak first."
 
 Forbidden:
 - Showing 2+ architectures again (we already forked)

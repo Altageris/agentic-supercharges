@@ -204,3 +204,69 @@ This run ALSO surfaced a framing question: should the agent scaffold defaults an
 **Rule relaxed:** `SKILL.md` § "When to refuse" — removed the "no defaults file" refuse bullet. Replaced with a Turn 1 setup step (step 0) that scaffolds inline and proceeds. Guardrails added: canonical path enforced, inferred-invariants audit summary required, push-back includes "defaults are wrong."
 **Rule tightened (separate):** `SKILL.md` § Turn 3 step 4 — explicit: a contract test exercises the actual new-boundary logic; for in-process boundaries this means trigger producer + assert consumer fires in expected order. A page-load curl is not a contract test. Also separated contract test (step 4) from smoke test (step 6) — they answer different questions.
 **Diff summary:** Three SKILL.md edits — softened scaffold rule + Turn 3 contract-test definition + smoke vs contract separation.
+
+### Run 2026-05-12-03 — scenario-bonus (confidence-crits architecture, run by a separate agent)
+
+**Scenario:** ad-hoc — validate architecture for confidence-triggered critical-hit mechanics (per-turn accumulation state ownership, turn-reset timing, confidence-data provenance from battle converter)
+**Project:** AICCORE Museum Arena Dashboard (`aiccore/dashboard/museum-arena-dashboard/`)
+**Primary source log (other agent):** `aiccore/dashboard/museum-arena-dashboard/docs/SKILL_OBSERVATION_LOG.md`
+**Defaults file:** present (project-level, scaffolded in run 02; this run reused it)
+**Model:** unknown (different session, different agent)
+**User-facing turns consumed:** 3 (target: 3) ✓
+
+#### Turn 1 — Survey & fork
+- Two sketches shown: Fork A (skeleton-only) vs Fork B (skeleton + slice) — note: this framing collapsed the structural fork into the *shipping choice*, which is a different drift than Run 02. Worth examining whether the agent confused "Turn 1 fork" (architectural alternatives) with "Turn 2 ship choice" (commitment level).
+- Companion not rendered (consistent drift across all three runs).
+- Failure modes documented inline ("Failure modes documented" — but not as the structured table).
+- Recommendation given, defaults-rooted.
+- ⚠️ **User-facing menu drift:** the user responded "A x B" — an off-menu hybrid. Agent interpreted as "ship slice" (hybrid skeleton+slice). This is empirical evidence the 3-option Turn 2 menu is too narrow or mislabeled.
+
+#### Turn 2 — Spec & contracts
+- Spec written to `docs/architecture/specs/2026-05-12-confidence-crits-arch.md` ✓
+- Parked decisions: 8 (target 5–10) ✓
+- Typed interfaces for AgentCard state included ✓
+- Question presented: standard "Ship slice / skeleton-only / one tweak?" — user said "ship slice"
+
+#### Turn 3 — Skeleton + slice
+- Implementation completed: AgentCard with `cumulativeDeltaThisTurn`, useBattleStream with parallel per-agent queuing, three useEffect hooks for turn boundary detection, crit calculation, 20 golden stars + 16 particles burst, screen shake ±2px for 200ms.
+- Files modified: agent-arena-battle.tsx, useBattleStream.ts, arena-stream/page.tsx
+- **`build_count`: 2** — type error caught (Map initialization), fixed in-arc.
+- **Runtime error post-ship:** 1 (Map methods on plain object) — the type error was caught at build but a related runtime issue manifested at execution, suggesting the build-time fix didn't fully resolve the access-pattern inconsistency.
+- **`turn_1_rigor_signal`: soft** — same as Run 02. Same root cause (Map/object access-pattern mismatch in Turn 1's typed interface vs example code).
+
+#### Deviations
+1. **Map/object access-pattern drift — repeats Run 02 exactly.** Two-for-two across independent runs is a pattern, not an anecdote.
+2. **"A x B" off-menu user response.** Turn 2 menu is too narrow or mislabeled. Promoted to skill change (see below).
+3. **Fork-vs-shipping-choice confusion** in Turn 1. Sketches were labeled "Fork A: skeleton-only" / "Fork B: skeleton+slice" — that's a *commitment level* fork, not an *architectural* fork. The actual architecture was already settled before sketching. This is a different drift than Run 02; logged for tracking.
+4. **Companion never rendered.** Consistent across all 3 runs. Reaching the point where this is a hard-drift pattern, not soft.
+
+#### Cross-reference — independent validation of `four-turn-architecture` hypothesis
+The other agent's recommendation #1 in `SKILL_OBSERVATION_LOG.md`: **"Pre-Turn-2 Type Check: Run `tsc --noEmit` after spec, before implementation, to catch interface mismatches early."** This is **exactly the Turn 2 rigor verification mechanic** that motivates `four-turn-architecture`. Two independent agents looking at the same drift class converged on the same fix.
+
+The `four-turn-architecture` hypothesis is no longer "one agent's intuition" — it's externally re-derived. Strong evidence for the experimental sibling skill earning a real paired-run comparison.
+
+#### Rule violation summary
+- [ ] 4+ turns used (3 — budget held)
+- [ ] 3+ architectural sketches shown
+- [x] Boxes-and-lines without contracts (sketches were prose-with-pseudo-code per the other agent's log)
+- [ ] Migration without rollback
+- [x] Boundary without structured failure-mode table (consistent drift across runs)
+- [x] Observability gap at new boundary (consistent drift across runs)
+- [ ] Slice shipped that should have auto-degraded
+- [ ] Permission asked for build / migration / restart
+- [ ] Re-questioned settled decision
+- [ ] Invariant treated as consultative
+- [ ] Tangent surfaced instead of parked
+- [ ] Scope expansion
+
+#### Verdict
+- [ ] Clean compression
+- [x] Soft drift — same Map/object pattern + new menu-too-narrow pattern; rules tightened (see Skill change below)
+- [ ] Hard drift
+
+### Skill change 2026-05-12 (c)
+**Drift observed across runs:** (1) Map/object access-pattern mismatch in Turn 1 typed interfaces — two-for-two across Run 02 and Run 03. (2) Turn 2 menu's three options ("ship slice / skeleton-only / one tweak") provoked an off-menu user response ("A x B" hybrid) — labels don't clearly convey that slice ⊃ skeleton.
+**Rules tightened:**
+1. `architecture-defaults-template.md` — added a new "Typed-interface discipline" section requiring Map/Set declarations and example code to use the same access methods. Default invariant: `.get/.set/.has/.delete` for Maps; never `obj[key]` indexing.
+2. `SKILL.md` Turn 2 step 6 (and `four-turn-architecture` Turn 3 step 6) — replaced 3-option menu with 4-option commitment ladder: **"Ship slice / Ship skeleton, defer slice / Ship spec, defer code / Tweak first?"** Labels make the commitment level explicit.
+**Diff summary:** Two SKILL.md edits (menu wording in both skills) + one defaults-template edit (Map/Set discipline invariant).
