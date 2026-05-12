@@ -1,0 +1,36 @@
+# three-turn-architecture — test scenarios
+
+Each scenario is a fixed user-prompt sequence that exercises one compression rule. Run them against the skill in a fresh session, follow the prompts in order, and log every deviation in `observation-log.md`.
+
+## How to run
+
+1. Pick a scenario file. Read its **Setup** section — make sure the preconditions hold (preferences file present/absent, repo state, etc.).
+2. Open a fresh session in the target project.
+3. Paste the scenario's **User prompt** verbatim (or the variant you want to test).
+4. Follow the **Expected user reply** lines exactly when the skill asks.
+5. After the session, open `observation-log.md` and append a run report using the template at the top of that file.
+
+## What the scenarios cover
+
+| Scenario | Tests |
+|---|---|
+| 00-no-defaults | Refusal when `architecture-defaults.md` is missing — must not start the three-turn arc |
+| 01-sync-to-async | Clean compression on a typical refactor: synchronous chain → async via a queue |
+| 02-slice-too-big | Auto-degrade from B (skeleton+slice) to A (skeleton-only) when slice crosses multiple boundaries |
+| 03-exploration-routing | Routing to `superpowers:brainstorming` when the prompt is exploratory ("how should we architect…") |
+| 04-perf-diagnosis | Constraint = performance; verifying the skill grounds the perf envelope in measurements, not guesses |
+
+## Anti-pattern signals to watch for
+
+Across every scenario, log if the skill:
+
+- Used 4+ user-facing turns
+- Showed 3+ architectural sketches in Turn 1 (it should show exactly 2)
+- Asked permission for a build, migration, or restart
+- Asked about a sub-decision that the defaults file already covers
+- Wrote a migration without a rollback
+- Wrote a boundary without timeout + retry + idempotency
+- Shipped a slice that should have auto-degraded
+- Reopened a settled fork after the user picked
+
+Repeated drifts → tighten the rule in `SKILL.md`. Append a `Skill change` entry to the observation log.

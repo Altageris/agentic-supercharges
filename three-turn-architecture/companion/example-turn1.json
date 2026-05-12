@@ -1,0 +1,63 @@
+{
+  "turn": 1,
+  "constraint": "POST /checkout p99 = 1.8s; B (notify) and C (analytics) are eligible to move off the request path.",
+  "topology_evidence": [
+    "app/api/checkout/route.ts:42 — sequential awaits on serviceA, serviceB, serviceC",
+    "lib/services/notify.ts:88 — no internal queue; direct HTTP",
+    "architecture-defaults.md — async transport allowed: in-proc queue OR bus"
+  ],
+  "topology_survey": {
+    "call_graph": [
+      "app/api/checkout/route.ts:42 — handleCheckout → serviceA.write — synchronous order write (must stay on-path)",
+      "app/api/checkout/route.ts:51 — handleCheckout → notify.send — awaited; offload candidate",
+      "app/api/checkout/route.ts:58 — handleCheckout → analytics.record — awaited; offload candidate",
+      "lib/services/notify.ts:88 — notify.send → HTTP POST /internal/notify — no internal queue; direct HTTP call",
+      "lib/services/analytics.ts:34 — analytics.record → HTTP POST /internal/events — no internal queue; direct HTTP call"
+    ],
+    "ownership_map": [
+      { "owner": "/checkout handler", "entity": "Order", "kind": "table" },
+      { "owner": "lib/services/notify.ts", "entity": "NotificationState", "kind": "state" },
+      { "owner": "lib/services/analytics.ts", "entity": "EventLog", "kind": "table" },
+      { "owner": "lib/jobs/worker.ts", "entity": "JobQueue", "kind": "queue" }
+    ],
+    "current_contracts": "// lib/services/notify.ts:1\nexport async function send(orderId: string): Promise<void>;\n\n// lib/services/analytics.ts:1\nexport async function record(orderId: string, event: string): Promise<void>;\n\n// app/api/checkout/route.ts:38\nexport async function handleCheckout(input: CheckoutInput): Promise<CheckoutResult>;",
+    "defaults_invariants": [
+      "no-net-new-infra — net-new infrastructure (external bus, managed queue service) requires explicit approval before it appears in a sketch",
+      "async-transport-allowed — in-proc queue OR existing bus are both permissible transports for offloading best-effort work",
+      "idempotency-required — all async consumer calls must be idempotent; idempotencyKey must be derivable from durable data",
+      "flag-gate-required — every behavior change ships behind a feature flag with a documented rollback path"
+    ]
+  },
+  "sketches": [
+    {
+      "label": "A",
+      "title": "In-proc queue (job runner)",
+      "summary": "Handler returns after A; B and C enqueue jobs consumed by an in-process worker pool.",
+      "interfaces": "type CheckoutEvent = { orderId: string; idempotencyKey: string; emittedAt: string };\n\ninterface JobQueue {\n  enqueue(topic: 'notify' | 'analytics', e: CheckoutEvent): Promise<void>;\n}\n\ninterface NotifyHandler { (e: CheckoutEvent): Promise<void>; }\ninterface AnalyticsHandler { (e: CheckoutEvent): Promise<void>; }",
+      "sequence_mermaid": "sequenceDiagram\n  participant C as Client\n  participant H as /checkout\n  participant A as ServiceA\n  participant Q as JobQueue\n  participant W as Worker\n  C->>H: POST /checkout\n  H->>A: write order (sync)\n  A-->>H: ok\n  H->>Q: enqueue notify, analytics\n  H-->>C: 200 (orderId)\n  Q->>W: notify event\n  W-->>Q: ack\n  Q->>W: analytics event\n  alt failure\n    W-->>Q: nack\n    Q->>Q: retry x3 expo\n    Q->>DLQ: dead-letter\n  end",
+      "failure_modes": [
+        { "call": "handler→A", "timeout_ms": 800, "retries": 0, "backoff": "n/a", "idempotency": "required", "dead_letter": "5xx to client" },
+        { "call": "handler→queue", "timeout_ms": 50,  "retries": 1, "backoff": "linear", "idempotency": "required", "dead_letter": "log + return 200 (B/C are best-effort)" },
+        { "call": "worker→notify",  "timeout_ms": 2000, "retries": 3, "backoff": "expo", "idempotency": "required", "dead_letter": "DLQ:notify-failed" },
+        { "call": "worker→analytics", "timeout_ms": 2000, "retries": 3, "backoff": "expo", "idempotency": "required", "dead_letter": "DLQ:analytics-failed" }
+      ],
+      "perf_envelope": { "p50_ms": 180, "p99_ms": 450, "throughput": "300 req/s", "memory_mb": 64 }
+    },
+    {
+      "label": "B",
+      "title": "External message bus (existing)",
+      "summary": "Reuse the project's message bus; B and C become consumers in their own deploy units.",
+      "interfaces": "type CheckoutEvent = { orderId: string; idempotencyKey: string; emittedAt: string };\n\ninterface BusProducer {\n  publish(topic: 'checkout.notify' | 'checkout.analytics', e: CheckoutEvent): Promise<void>;\n}\n\n// consumers live in services/notify and services/analytics; not part of /checkout's deploy",
+      "sequence_mermaid": "sequenceDiagram\n  participant C as Client\n  participant H as /checkout\n  participant A as ServiceA\n  participant B as Bus\n  participant N as NotifyConsumer\n  participant X as AnalyticsConsumer\n  C->>H: POST /checkout\n  H->>A: write order (sync)\n  A-->>H: ok\n  H->>B: publish notify, analytics\n  H-->>C: 200\n  B->>N: deliver notify\n  B->>X: deliver analytics\n  alt slow consumer\n    B->>B: retry per topic policy\n    B->>DLQ: park\n  end",
+      "failure_modes": [
+        { "call": "handler→A", "timeout_ms": 800, "retries": 0, "backoff": "n/a", "idempotency": "required", "dead_letter": "5xx to client" },
+        { "call": "handler→bus", "timeout_ms": 100, "retries": 2, "backoff": "expo", "idempotency": "required (idempotencyKey is partition key)", "dead_letter": "fail-soft: log + 200" },
+        { "call": "consumer→notify", "timeout_ms": 5000, "retries": 5, "backoff": "expo+jitter", "idempotency": "required", "dead_letter": "notify-dlq" },
+        { "call": "consumer→analytics", "timeout_ms": 5000, "retries": 5, "backoff": "expo+jitter", "idempotency": "required", "dead_letter": "analytics-dlq" }
+      ],
+      "perf_envelope": { "p50_ms": 170, "p99_ms": 420, "throughput": "1000 req/s", "memory_mb": 32 }
+    }
+  ],
+  "recommendation": "A — defaults forbid net-new infra without explicit approval; in-proc queue clears the budget and reuses the existing worker pool. B is preferred only if we'll need cross-service consumers within 90 days.",
+  "question": "A, B, or push back?"
+}

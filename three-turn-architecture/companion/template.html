@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>three-turn-architecture · companion</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0d14;
+    --bg-2: #11141d;
+    --bg-3: #181c27;
+    --fg: #e7eaf3;
+    --fg-dim: #9aa1b3;
+    --line: #232838;
+    --accent: #6cf;
+    --warn: #f7c548;
+    --bad: #ff6b6b;
+    --good: #5dd39e;
+    --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    padding: 24px 32px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--accent);
+  }
+  header .turn {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-dim);
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  header .constraint {
+    flex: 1 1 100%;
+    margin-top: 8px;
+    font-size: 18px;
+    color: var(--fg);
+    line-height: 1.4;
+  }
+  header .evidence {
+    flex: 1 1 100%;
+    margin-top: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg-dim);
+  }
+  header .evidence ul { margin: 4px 0 0; padding-left: 18px; }
+  main.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+  }
+  main.single { display: block; }
+  .sketch {
+    background: var(--bg);
+    padding: 24px 28px 32px;
+    min-width: 0;
+  }
+  .sketch h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  .sketch h2 .label {
+    display: inline-block;
+    background: var(--accent);
+    color: #061018;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 800;
+    margin-right: 10px;
+    vertical-align: 2px;
+  }
+  .sketch .summary {
+    color: var(--fg-dim);
+    margin-bottom: 18px;
+  }
+  .sketch h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-dim);
+    margin: 22px 0 8px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 4px;
+  }
+  pre.code {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  .mermaid {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px;
+    overflow-x: auto;
+  }
+  table.failure {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  table.failure th, table.failure td {
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.failure th { color: var(--fg-dim); font-weight: 600; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; }
+  table.failure td.num { color: var(--warn); }
+  .perf {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .perf .cell {
+    background: var(--bg-2);
+    padding: 10px 12px;
+  }
+  .perf .k {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg-dim);
+  }
+  .perf .v {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--fg);
+    margin-top: 4px;
+  }
+  .recommendation {
+    margin: 0;
+    padding: 18px 32px;
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .recommendation strong { color: var(--good); }
+  .turn2-extras {
+    padding: 24px 32px;
+  }
+  .turn2-extras h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-dim); margin: 16px 0 8px; }
+  .turn2-extras ol { padding-left: 22px; }
+  .turn2-extras li { margin: 4px 0; }
+  footer {
+    padding: 16px 32px 28px;
+    color: var(--fg-dim);
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 1100px) {
+    main.grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Topology Survey Panel ─────────────────────────────────── */
+  #topology-survey {
+    background: var(--bg-2);
+    border-left: 3px solid var(--fg-dim);
+    margin: 0;
+    padding: 20px 32px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .topo-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .topo-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--fg-dim);
+  }
+  .topo-badge {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--bg-2);
+    background: var(--fg-dim);
+    padding: 1px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  .topo-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .topo-h3 {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-dim);
+    margin: 16px 0 7px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 3px;
+  }
+  .topo-h3:first-child { margin-top: 0; }
+  .topo-list {
+    padding-left: 20px;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fg);
+    line-height: 1.6;
+  }
+  .topo-list li { margin: 3px 0; }
+  .topo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .topo-table th, .topo-table td {
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .topo-table th {
+    color: var(--fg-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+  }
+  .topo-table td { color: var(--fg); }
+  .topo-table td:last-child { color: var(--fg-dim); }
+  #topo-contracts { margin: 0; font-size: 12px; }
+  .topo-invariant-list {
+    padding-left: 18px;
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .topo-invariant-list li { margin: 4px 0; color: var(--fg); }
+  .topo-invariant-list li::marker { color: var(--fg-dim); }
+  .topo-invariant-list strong {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--warn);
+  }
+  @media (max-width: 1100px) {
+    .topo-body { grid-template-columns: 1fr; }
+  }
+
+  /* ── Failure-mode diff view ─────────────────────────────────── */
+  #failure-diff {
+    padding: 24px 32px 28px;
+    border-top: 1px solid var(--line);
+  }
+  #failure-diff h3.diff-heading {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-dim);
+    margin: 0 0 12px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.failure-diff {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+    table-layout: fixed;
+  }
+  table.failure-diff th,
+  table.failure-diff td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  table.failure-diff th {
+    color: var(--fg-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+  }
+  table.failure-diff col.col-call  { width: 18%; }
+  table.failure-diff col.col-field { width: 13%; }
+  table.failure-diff col.col-delta { width: 17%; }
+  td.sig-same     { color: var(--fg-dim); }
+  td.sig-minor    { color: var(--warn); }
+  td.sig-material { color: var(--bad); }
+  table.failure-diff td.changed { background: rgba(255,107,107,0.07); }
+  .only-marker {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: 1px;
+    background: rgba(255,107,107,0.15);
+    color: var(--bad);
+    border: 1px solid rgba(255,107,107,0.3);
+  }
+  @media (max-width: 800px) {
+    table.failure-diff {
+      font-size: 11px;
+      table-layout: auto;
+    }
+    table.failure-diff col.col-call,
+    table.failure-diff col.col-field,
+    table.failure-diff col.col-delta { width: auto; }
+    table.failure-diff th,
+    table.failure-diff td { padding: 5px 5px; }
+  }
+
+  /* ── Slice Feasibility Panel ─────────────────────────────────── */
+  .sf-panel {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .sf-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .sf-boundary-badge {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: #061018;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+    min-width: 48px;
+    text-align: center;
+  }
+  .sf-boundary-label {
+    font-size: 12px;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sf-subhead {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--fg-dim);
+    margin: 14px 0 6px;
+    font-weight: 600;
+  }
+  .sf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .sf-table th, .sf-table td {
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sf-table th {
+    color: var(--fg-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+  }
+  .sf-path  { color: var(--accent); }
+  .sf-reason { color: var(--fg); }
+  .sf-step-num  { color: var(--fg-dim); width: 32px; }
+  .sf-step-desc { color: var(--fg); }
+  .sf-risk      { font-weight: 700; width: 72px; }
+  .sf-fixtures {
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    margin: 12px 0 4px;
+  }
+  .sf-fixtures strong {
+    color: var(--fg-dim);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sf-fixtures ul { margin: 6px 0 0; padding-left: 18px; }
+  .sf-fixtures li { color: var(--fg); margin: 3px 0; }
+  .sf-verdict {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .sf-verdict--feasible {
+    background: color-mix(in srgb, var(--good) 12%, var(--bg-2));
+    border: 1px solid color-mix(in srgb, var(--good) 40%, transparent);
+  }
+  .sf-verdict--degraded {
+    background: color-mix(in srgb, var(--bad) 15%, var(--bg-2));
+    border: 1px solid color-mix(in srgb, var(--bad) 50%, transparent);
+  }
+  .sf-verdict-icon {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .sf-verdict--feasible .sf-verdict-icon { color: var(--good); }
+  .sf-verdict--degraded .sf-verdict-icon { color: var(--bad); }
+  .sf-verdict-text { color: var(--fg); }
+  .sf-verdict-text strong { color: inherit; }
+</style>
+</head>
+<body>
+<script>
+window.__ARCH_DATA__ = __DATA_JSON__;
+</script>
+<header>
+  <h1>three-turn-architecture · companion</h1>
+  <span class="turn" id="turn-badge"></span>
+  <div class="constraint" id="constraint"></div>
+  <div class="evidence" id="evidence"></div>
+</header>
+<section id="topology-survey">
+  <div class="topo-header">
+    <span class="topo-title">Current topology</span>
+    <span class="topo-badge">READ · NOT ASSUMED</span>
+  </div>
+  <div class="topo-body">
+    <div class="topo-col">
+      <h3 class="topo-h3">Call graph slice</h3>
+      <ol id="topo-call-graph" class="topo-list"></ol>
+      <h3 class="topo-h3">Data ownership</h3>
+      <table id="topo-ownership" class="topo-table">
+        <thead><tr><th>Owner</th><th>Entity</th><th>Kind</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="topo-col">
+      <h3 class="topo-h3">Current contracts</h3>
+      <pre id="topo-contracts" class="code"></pre>
+      <h3 class="topo-h3">Defaults invariants in play</h3>
+      <ul id="topo-invariants" class="topo-invariant-list"></ul>
+    </div>
+  </div>
+</section>
+<main id="grid"></main>
+<section id="failure-diff"></section>
+<div class="recommendation" id="recommendation"></div>
+<section class="turn2-extras" id="extras"></section>
+<footer id="footer"></footer>
+<script>
+(function () {
+  const d = window.__ARCH_DATA__;
+  const $ = (id) => document.getElementById(id);
+  $("turn-badge").textContent = "TURN " + d.turn;
+  $("constraint").textContent = d.constraint || "";
+  if (d.topology_survey) {
+    renderTopologySurvey(d.topology_survey);
+  } else {
+    document.getElementById("topology-survey").remove();
+    if (d.topology_evidence && d.topology_evidence.length) {
+      $("evidence").innerHTML = "<strong>Topology evidence (read, not assumed):</strong><ul>" +
+        d.topology_evidence.map((e) => "<li>" + escapeHtml(e) + "</li>").join("") + "</ul>";
+    }
+  }
+  const grid = $("grid");
+  grid.className = d.sketches.length === 1 ? "single" : "grid";
+  d.sketches.forEach((s) => grid.appendChild(renderSketch(s)));
+  renderFailureDiff(d.sketches);
+  if (d.recommendation) {
+    $("recommendation").innerHTML = "<strong>Recommendation:</strong> " + escapeHtml(d.recommendation);
+  } else {
+    $("recommendation").remove();
+  }
+  if (d.turn === 2 && d.consolidated) {
+    renderTurn2Extras(d.consolidated);
+  } else {
+    $("extras").remove();
+  }
+  $("footer").textContent = "Spec path: " + (d.spec_path || "(unwritten)") + "  ·  question: " + (d.question || "");
+  mermaid.initialize({ startOnLoad: true, theme: "dark", themeVariables: { background: "#11141d", primaryColor: "#1c2230", primaryTextColor: "#e7eaf3", lineColor: "#6cf", secondaryColor: "#181c27" } });
+})();
+
+function renderSketch(s) {
+  const el = document.createElement("section");
+  el.className = "sketch";
+  el.innerHTML = `
+    <h2><span class="label">${escapeHtml(s.label)}</span>${escapeHtml(s.title)}</h2>
+    <div class="summary">${escapeHtml(s.summary || "")}</div>
+    <h3>Interfaces</h3>
+    <pre class="code"><code>${escapeHtml(s.interfaces || "")}</code></pre>
+    <h3>Sequence (happy + failure)</h3>
+    <div class="mermaid">${escapeHtml(s.sequence_mermaid || "")}</div>
+    <h3>Failure modes</h3>
+    ${renderFailureTable(s.failure_modes || [])}
+    <h3>Perf envelope</h3>
+    ${renderPerf(s.perf_envelope || {})}
+  `;
+  return el;
+}
+
+function renderFailureTable(rows) {
+  if (!rows.length) return "<p style='color:var(--fg-dim);font-style:italic'>none declared</p>";
+  return `<table class="failure">
+    <thead><tr><th>Call</th><th>Timeout</th><th>Retries</th><th>Backoff</th><th>Idempotency</th><th>Dead-letter</th></tr></thead>
+    <tbody>${rows.map((r) => `<tr>
+      <td>${escapeHtml(r.call)}</td>
+      <td class="num">${escapeHtml(String(r.timeout_ms))} ms</td>
+      <td class="num">${escapeHtml(String(r.retries))}</td>
+      <td>${escapeHtml(r.backoff || "")}</td>
+      <td>${escapeHtml(r.idempotency || "")}</td>
+      <td>${escapeHtml(r.dead_letter || "")}</td>
+    </tr>`).join("")}</tbody></table>`;
+}
+
+function renderPerf(p) {
+  const cells = [
+    ["p50",       p.p50_ms ? p.p50_ms + " ms" : "—"],
+    ["p99",       p.p99_ms ? p.p99_ms + " ms" : "—"],
+    ["Throughput", p.throughput || "—"],
+    ["Memory",    p.memory_mb ? p.memory_mb + " MB" : "—"],
+  ];
+  return `<div class="perf">${cells.map(([k, v]) =>
+    `<div class="cell"><div class="k">${k}</div><div class="v">${escapeHtml(v)}</div></div>`).join("")}</div>`;
+}
+
+function renderTurn2Extras(c) {
+  const el = document.getElementById("extras");
+  el.innerHTML = renderFeasibility(c.slice_feasibility) + `
+    <h3>Migration plan</h3>
+    <pre class="code"><code>${escapeHtml(c.migration || "")}</code></pre>
+    <h3>Slice plan</h3>
+    <ol>${(c.slice_tickets || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ol>
+    <h3>Parked tickets</h3>
+    <ol>${(c.parked || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ol>
+  `;
+}
+
+function renderTopologySurvey(survey) {
+  const el = document.getElementById("topology-survey");
+  if (!survey) { el.remove(); return; }
+
+  const cgEl = document.getElementById("topo-call-graph");
+  (survey.call_graph || []).forEach(function (entry) {
+    const li = document.createElement("li");
+    li.textContent = entry;
+    cgEl.appendChild(li);
+  });
+
+  const tbody = document.querySelector("#topo-ownership tbody");
+  (survey.ownership_map || []).forEach(function (row) {
+    const tr = document.createElement("tr");
+    [row.owner, row.entity, row.kind].forEach(function (val) {
+      const td = document.createElement("td");
+      td.textContent = val || "";
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("topo-contracts").textContent = survey.current_contracts || "";
+
+  const invEl = document.getElementById("topo-invariants");
+  (survey.defaults_invariants || []).forEach(function (clause) {
+    const li = document.createElement("li");
+    const dash = clause.indexOf(" — ");
+    if (dash !== -1) {
+      const strong = document.createElement("strong");
+      strong.textContent = clause.slice(0, dash);
+      li.appendChild(strong);
+      li.appendChild(document.createTextNode(clause.slice(dash)));
+    } else {
+      li.textContent = clause;
+    }
+    invEl.appendChild(li);
+  });
+}
+
+function renderFailureDiff(sketches) {
+  const el = document.getElementById("failure-diff");
+  if (!el) return;
+  if (sketches.length !== 2) { el.remove(); return; }
+  const sA = sketches[0], sB = sketches[1];
+  const rowsA = sA.failure_modes || [];
+  const rowsB = sB.failure_modes || [];
+  if (!rowsA.length && !rowsB.length) { el.remove(); return; }
+
+  const mapA = {}; rowsA.forEach((r) => { mapA[r.call] = r; });
+  const mapB = {}; rowsB.forEach((r) => { mapB[r.call] = r; });
+  const allCalls = Array.from(new Set([].concat(rowsA.map((r) => r.call), rowsB.map((r) => r.call))));
+
+  const FIELDS = [
+    { key: "timeout_ms", label: "Timeout" },
+    { key: "retries",    label: "Retries" },
+    { key: "backoff",    label: "Backoff" },
+    { key: "idempotency", label: "Idempotency" },
+    { key: "dead_letter", label: "Dead-letter" },
+  ];
+
+  function dlKind(val) {
+    if (!val) return "none";
+    const v = String(val).toLowerCase();
+    if (v.includes("dlq") || v.includes("dead-letter") || v.includes("-failed") || v.includes("-dlq")) return "dlq";
+    if (v.includes("fail-soft") || v.includes("best-effort") || v.includes("log")) return "failsoft";
+    if (v.includes("5xx") || v.includes("error") || v.includes("throw")) return "error";
+    return "other";
+  }
+
+  function classifyRow(rA, rB, onlyIn) {
+    if (onlyIn) return "material";
+    const fields = ["timeout_ms", "retries", "backoff", "idempotency", "dead_letter"];
+    const same = fields.every((k) => String(rA[k] || "") === String(rB[k] || ""));
+    if (same) return "same";
+    if (String(rA.idempotency || "") !== String(rB.idempotency || "")) return "material";
+    if (dlKind(rA.dead_letter) !== dlKind(rB.dead_letter)) return "material";
+    const retryDiff = Math.abs((rA.retries || 0) - (rB.retries || 0));
+    if (retryDiff >= 2) return "material";
+    const tA = Number(rA.timeout_ms || 0), tB = Number(rB.timeout_ms || 0);
+    const larger = Math.max(tA, tB);
+    if (larger > 0 && Math.abs(tA - tB) / larger >= 0.20) return "material";
+    return "minor";
+  }
+
+  function fmtCell(r, key, counterpart) {
+    if (!r) return `<td class="changed">—</td>`;
+    const val = String(r[key] == null ? "" : r[key]);
+    const other = counterpart ? String(counterpart[key] == null ? "" : counterpart[key]) : null;
+    const differs = other !== null && val !== other;
+    const display = key === "timeout_ms" ? val + " ms" : val;
+    return `<td${differs ? ' class="changed"' : ""}>${escapeHtml(display)}</td>`;
+  }
+
+  const aLabel = escapeHtml(sA.label || "A");
+  const bLabel = escapeHtml(sB.label || "B");
+
+  const bodyRows = allCalls.map((call) => {
+    const rA = mapA[call] || null;
+    const rB = mapB[call] || null;
+    const onlyIn = rA && !rB ? "A" : (!rA && rB ? "B" : null);
+    const sig = classifyRow(rA, rB, onlyIn);
+    const markerHtml = onlyIn ? `<span class="only-marker">${onlyIn} only</span>` : "";
+    return `<tr>
+      <td>${escapeHtml(call)}${markerHtml}</td>
+      ${FIELDS.map((f) => fmtCell(rA, f.key, rB)).join("")}
+      ${FIELDS.map((f) => fmtCell(rB, f.key, rA)).join("")}
+      <td class="sig-${sig}">${sig}</td>
+    </tr>`;
+  }).join("");
+
+  el.innerHTML = `
+    <h3 class="diff-heading">Failure-mode diff</h3>
+    <table class="failure-diff">
+      <colgroup>
+        <col class="col-call">
+        ${FIELDS.map(() => '<col class="col-field">').join("")}
+        ${FIELDS.map(() => '<col class="col-field">').join("")}
+        <col class="col-delta">
+      </colgroup>
+      <thead>
+        <tr>
+          <th rowspan="2">Call</th>
+          <th colspan="${FIELDS.length}">${aLabel}</th>
+          <th colspan="${FIELDS.length}">${bLabel}</th>
+          <th rowspan="2">Δ significance</th>
+        </tr>
+        <tr>
+          ${FIELDS.map((f) => `<th>${escapeHtml(f.label)}</th>`).join("")}
+          ${FIELDS.map((f) => `<th>${escapeHtml(f.label)}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>${bodyRows}</tbody>
+    </table>`;
+}
+
+function renderFeasibility(f) {
+  if (!f) return "";
+
+  const explicitVerdict = f.verdict && f.verdict.status;
+  const derivedFeasible = (f.boundaries_crossed != null && f.threshold != null)
+    ? f.boundaries_crossed <= f.threshold
+    : true;
+  const isFeasible = explicitVerdict
+    ? f.verdict.status === "feasible"
+    : derivedFeasible;
+  const verdictReason = (f.verdict && f.verdict.reason)
+    ? f.verdict.reason
+    : (isFeasible
+        ? `boundaries_crossed (${f.boundaries_crossed}) ≤ threshold (${f.threshold})`
+        : `boundaries_crossed (${f.boundaries_crossed}) > threshold (${f.threshold})`);
+
+  const bCount = f.boundaries_crossed != null ? f.boundaries_crossed : "?";
+  const bThreshold = f.threshold != null ? f.threshold : "?";
+  const badgeColor = isFeasible ? "var(--good)" : "var(--bad)";
+
+  const fileRows = (f.files_touched || []).map((ft) =>
+    `<tr><td class="sf-path">${escapeHtml(ft.path)}</td><td class="sf-reason">${escapeHtml(ft.reason)}</td></tr>`
+  ).join("");
+
+  const stepRows = (f.migration_steps || []).map((ms) => {
+    const riskColor = ms.risk === "high"
+      ? "var(--bad)"
+      : ms.risk === "medium"
+        ? "var(--warn)"
+        : "var(--good)";
+    return `<tr>
+      <td class="sf-step-num">${escapeHtml(String(ms.step))}</td>
+      <td class="sf-step-desc">${escapeHtml(ms.description)}</td>
+      <td class="sf-risk" style="color:${riskColor}">${escapeHtml(ms.risk || "")}</td>
+    </tr>`;
+  }).join("");
+
+  const fixtureItems = (f.fixture_dependencies || []).map((dep) =>
+    `<li>${escapeHtml(dep)}</li>`
+  ).join("");
+  const fixtureBlock = fixtureItems
+    ? `<div class="sf-fixtures"><strong>Fixture / data dependencies</strong><ul>${fixtureItems}</ul></div>`
+    : "";
+
+  const verdictClass = isFeasible ? "sf-verdict sf-verdict--feasible" : "sf-verdict sf-verdict--degraded";
+  const verdictIcon = isFeasible ? "✓" : "✗";
+  const verdictLabel = isFeasible ? "Slice feasible" : "Slice too big";
+  const verdictSuffix = isFeasible ? "ship slice" : "degraded to skeleton-only";
+
+  return `
+    <h3>Slice feasibility</h3>
+    <div class="sf-panel">
+      <div class="sf-meta-row">
+        <div class="sf-boundary-badge" style="background:${badgeColor}">
+          ${escapeHtml(String(bCount))} / ${escapeHtml(String(bThreshold))}
+        </div>
+        <span class="sf-boundary-label">boundaries crossed / threshold</span>
+      </div>
+
+      <h4 class="sf-subhead">Files touched</h4>
+      <table class="sf-table sf-files">
+        <thead><tr><th>Path</th><th>Reason</th></tr></thead>
+        <tbody>${fileRows}</tbody>
+      </table>
+
+      <h4 class="sf-subhead">Migration steps (slice-scoped)</h4>
+      <table class="sf-table sf-steps">
+        <thead><tr><th>#</th><th>Step</th><th>Risk</th></tr></thead>
+        <tbody>${stepRows}</tbody>
+      </table>
+
+      ${fixtureBlock}
+
+      <div class="${verdictClass}">
+        <span class="sf-verdict-icon">${verdictIcon}</span>
+        <span class="sf-verdict-text"><strong>${escapeHtml(verdictLabel)}:</strong>
+          ${escapeHtml(verdictSuffix)} &mdash; ${escapeHtml(verdictReason)}
+        </span>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>

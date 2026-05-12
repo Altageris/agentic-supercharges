@@ -1,0 +1,65 @@
+# three-turn-architecture
+
+A skill that compresses architectural decisions into three user-facing turns: **Survey → Spec → Skeleton+Slice**.
+
+Sibling to `three-turn-design`. Same compression formula, different artifact: contracts and failure-modes instead of mockups.
+
+## Layout
+
+```
+three-turn-architecture/
+├── SKILL.md                              # The skill definition (auto-loaded)
+├── README.md                             # You are here
+├── architecture-defaults-template.md     # Copy this to ~/.claude/architecture-defaults.md to enable
+└── tests/
+    ├── README.md                         # How to run scenarios
+    ├── scenario-00-no-defaults.md
+    ├── scenario-01-sync-to-async.md
+    ├── scenario-02-slice-too-big.md
+    ├── scenario-03-exploration-routing.md
+    ├── scenario-04-perf-diagnosis.md
+    └── observation-log.md                # Append-only log of observed runs
+```
+
+## Quickstart
+
+1. **Scaffold invariants:**
+   ```
+   cp ~/.claude/skills/three-turn-architecture/architecture-defaults-template.md ~/.claude/architecture-defaults.md
+   ```
+   Fill in the choices. The skill refuses to run without this file.
+
+2. **Invoke in a session:**
+   ```
+   /three-turn-architecture  (or describe an architectural constraint with a speed signal)
+   ```
+
+3. **Observe a run:** open one of the test scenarios, follow the user-prompt flow, log the result in `tests/observation-log.md`.
+
+## What this skill assumes
+
+- The user wants to *ship* a skeleton, not debate boundaries. Every clause in `architecture-defaults.md` is treated as binding.
+- The codebase is readable — the skill grounds itself in the actual call graph, imports, and data ownership before sketching.
+- Architectural artifacts are **executable**: typed interfaces + sequence diagrams + failure-mode tables. Boxes-and-lines without contracts is banned.
+- Three turns is a hard budget. Turn 3 produces a skeleton + first vertical slice; if the slice would cross more than one new boundary, the skill auto-degrades to skeleton-only and lists the slice as ticket #1.
+
+## What this skill is not
+
+- Not for product-shape exploration ("what should we build?"). Use `superpowers:brainstorming`.
+- Not for single-file refactors with no boundary crossed — that's just implementation.
+- Not a replacement for code review or load testing. The skill ships a working skeleton; correctness review and load validation are separate passes.
+
+## Iterating
+
+The skill is meant to be revised based on observed drifts. The flow:
+
+1. Run scenarios across real projects.
+2. Log every deviation in `tests/observation-log.md`.
+3. When the same drift recurs (e.g., "asked about timeout defaults instead of reading them from invariants"), tighten the corresponding rule in `SKILL.md`.
+4. Append a `Skill change` entry to the observation log describing what changed and why.
+
+The test scenarios are the contract; the observation log is the feedback loop; `SKILL.md` is the artifact that tightens over time.
+
+## Source
+
+Designed as the architectural sibling of `three-turn-design`. Same three-turn shape, same defaults-as-binding philosophy, same compression formula — adapted to the architectural artifact (contracts, failure modes, slice) instead of the visual one (palette, layout, motion).

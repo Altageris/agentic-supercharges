@@ -1,0 +1,47 @@
+# Architecture defaults — four-turn variant
+
+This template is the **same shape as `three-turn-architecture/architecture-defaults-template.md`** with one added optional clause for the four-turn-specific Turn 2 rigor checkpoint.
+
+If you already have an `architecture-defaults.md` from running the parent skill, you don't need a separate one — the four-turn skill reads the same file path. Only add the new clause below if you want non-default rigor-checkpoint behavior.
+
+---
+
+## Use the parent template
+
+Copy from:
+
+```
+~/.claude/skills/three-turn-architecture/architecture-defaults-template.md
+```
+
+to either:
+
+- `~/.claude/architecture-defaults.md` (home, default)
+- `<project>/.claude/architecture-defaults.md` (per-project override)
+
+Fill in every section. The four-turn skill treats every clause as binding, identical to the parent.
+
+---
+
+## Optional addition: rigor-checkpoint strictness
+
+Append this section to your `architecture-defaults.md`:
+
+```
+## Rigor checkpoint strictness (four-turn variant only)
+
+> Controls Turn 2 behavior in `four-turn-architecture`. Ignored by `three-turn-architecture`.
+
+`rigor_checkpoint_strict`: one of
+
+- `auto-fix-soft`   — auto-apply soft fixes with a one-line note; surface blockers only.
+                       (Default. Recommended for most projects.)
+- `surface-all`     — every finding asks the user; safer but burns more turn-budget within Turn 2.
+                       (Use when interface mistakes have been costly in past runs.)
+- `strict-blocker`  — any finding stops the arc, including soft fixes.
+                       (Use only when the project absolutely cannot tolerate auto-corrections.)
+
+Pick one:  `_______`
+```
+
+If the clause is absent, `auto-fix-soft` is assumed.

@@ -1,0 +1,87 @@
+{
+  "turn": 2,
+  "constraint": "POST /checkout p99 = 1.8s; offloading B and C to an in-proc queue (Option A chosen).",
+  "topology_evidence": [
+    "app/api/checkout/route.ts:42 — current sync chain",
+    "lib/jobs/worker.ts:* — existing worker pool available for reuse"
+  ],
+  "topology_survey": {
+    "call_graph": [
+      "app/api/checkout/route.ts:42 — handleCheckout → serviceA.write — synchronous order write (stays on-path)",
+      "app/api/checkout/route.ts:51 — handleCheckout → notify.send — to be replaced by queue.enqueue('notify', event)",
+      "app/api/checkout/route.ts:58 — handleCheckout → analytics.record — to be replaced by queue.enqueue('analytics', event)",
+      "lib/jobs/worker.ts:* — existing worker pool available for reuse as the consumer side"
+    ],
+    "ownership_map": [
+      { "owner": "/checkout handler", "entity": "Order", "kind": "table" },
+      { "owner": "lib/jobs/worker.ts", "entity": "JobQueue", "kind": "queue" },
+      { "owner": "lib/services/notify.ts", "entity": "NotificationState", "kind": "state" },
+      { "owner": "lib/services/analytics.ts", "entity": "EventLog", "kind": "table" }
+    ],
+    "current_contracts": "// app/api/checkout/route.ts:38\nexport async function handleCheckout(input: CheckoutInput): Promise<CheckoutResult>;\n\n// lib/jobs/worker.ts (existing — to extend)\nexport interface WorkerPool { register(topic: string, handler: (msg: unknown) => Promise<void>): void; }",
+    "defaults_invariants": [
+      "no-net-new-infra — reuse the existing worker pool, do not introduce an external bus",
+      "idempotency-required — CheckoutEvent.idempotencyKey is `${orderId}:${topic}`",
+      "flag-gate-required — cutover ships behind CHECKOUT_ASYNC with documented rollback"
+    ]
+  },
+  "sketches": [
+    {
+      "label": "A",
+      "title": "In-proc queue (consolidated)",
+      "summary": "One handler, one queue, two consumers. Idempotency key derived from orderId + topic.",
+      "interfaces": "type CheckoutEvent = { orderId: string; idempotencyKey: string; emittedAt: string };\n\ninterface JobQueue {\n  enqueue(topic: 'notify' | 'analytics', e: CheckoutEvent): Promise<void>;\n}\n\nexport async function handleCheckout(input: CheckoutInput): Promise<CheckoutResult> {\n  const order = await serviceA.write(input);\n  const event: CheckoutEvent = { orderId: order.id, idempotencyKey: `${order.id}:checkout`, emittedAt: nowIso() };\n  await Promise.all([queue.enqueue('notify', event), queue.enqueue('analytics', event)]);\n  return { orderId: order.id };\n}",
+      "sequence_mermaid": "sequenceDiagram\n  Client->>+Handler: POST /checkout\n  Handler->>+ServiceA: write order\n  ServiceA-->>-Handler: ok\n  Handler->>Queue: enqueue notify\n  Handler->>Queue: enqueue analytics\n  Handler-->>-Client: 200\n  Queue->>Worker: notify event\n  Worker-->>Queue: ack\n  Queue->>Worker: analytics event\n  Worker-->>Queue: ack",
+      "failure_modes": [
+        { "call": "handler→A", "timeout_ms": 800, "retries": 0, "backoff": "n/a", "idempotency": "required", "dead_letter": "5xx to client" },
+        { "call": "handler→queue", "timeout_ms": 50, "retries": 1, "backoff": "linear", "idempotency": "required", "dead_letter": "log + 200" },
+        { "call": "worker→notify", "timeout_ms": 2000, "retries": 3, "backoff": "expo", "idempotency": "required", "dead_letter": "DLQ:notify-failed" },
+        { "call": "worker→analytics", "timeout_ms": 2000, "retries": 3, "backoff": "expo", "idempotency": "required", "dead_letter": "DLQ:analytics-failed" }
+      ],
+      "perf_envelope": { "p50_ms": 180, "p99_ms": 450, "throughput": "300 req/s", "memory_mb": 64 }
+    }
+  ],
+  "consolidated": {
+    "slice_feasibility": {
+      "files_touched": [
+        { "path": "app/api/checkout/route.ts", "reason": "Add enqueue call behind CHECKOUT_ASYNC flag" },
+        { "path": "lib/jobs/queue.ts",         "reason": "New JobQueue interface + in-proc impl" },
+        { "path": "lib/jobs/worker.ts",        "reason": "Wire notify consumer" },
+        { "path": "tests/checkout.smoke.ts",   "reason": "Smoke test: enqueue → notify consumer fires once" }
+      ],
+      "boundaries_crossed": 1,
+      "threshold": 1,
+      "migration_steps": [
+        { "step": 1, "description": "Add JobQueue interface + in-proc impl; gate behind CHECKOUT_ASYNC=off", "risk": "low" },
+        { "step": 2, "description": "Instrument producer call in /checkout route behind flag", "risk": "low" },
+        { "step": 3, "description": "Wire notify consumer; assert idempotency key uniqueness", "risk": "medium" },
+        { "step": 4, "description": "Run smoke test with CHECKOUT_ASYNC=on; validate notify fires exactly once", "risk": "low" }
+      ],
+      "fixture_dependencies": [
+        "Seeded order record with known orderId for smoke test",
+        "Stub notify-service endpoint (or real service reachable in CI)"
+      ],
+      "verdict": {
+        "status": "feasible",
+        "reason": "One boundary crossed (handler → queue → notify consumer); all fixtures creatable inline."
+      }
+    },
+    "migration": "1. Add JobQueue interface and in-proc worker pool config (no-op behind flag CHECKOUT_ASYNC=off).\n2. Add producer call in /checkout behind the flag; consumers wired but flag-gated.\n3. Parallel-run for 48h: flag on for 1% traffic, compare p99 + DLQ rate vs control.\n4. Ramp 1% → 10% → 50% → 100% over 5 days if p99 stays under 600ms and DLQ < 0.1%.\n5. Cutover: remove sync calls to B and C; keep flag for 14 days for instant rollback.\n6. Rollback: flip CHECKOUT_ASYNC=off; sync path re-engages immediately.",
+    "slice_tickets": [
+      "Slice (Turn 3): notify event end-to-end (producer + consumer + smoke test) behind CHECKOUT_ASYNC=on for 1% traffic",
+      "Ticket #2: analytics event end-to-end (mirrors notify; ship after notify clears parallel-run)",
+      "Ticket #3: cutover PR — remove sync calls once 100% ramp holds for 7 days"
+    ],
+    "parked": [
+      "Exact retry-backoff constants per topic (current: expo, base 250ms, cap 8s — revisit after load test)",
+      "Queue retention window (current default: 24h — confirm against analytics replay needs)",
+      "Alert thresholds: DLQ rate, worker lag (set p99 worker lag < 30s)",
+      "Dashboard panel layout (one row per topic: enqueue rate, ack rate, DLQ rate, p99 lag)",
+      "Correlation id propagation (request_id flows into CheckoutEvent — confirm logging field name)",
+      "Worker pool sizing (current: 8 workers × 2 concurrency — re-tune after load test)",
+      "DLQ destination details (queue name, retention, alert binding)"
+    ]
+  },
+  "spec_path": "docs/architecture/specs/2026-05-12-checkout-async-arch.md",
+  "question": "Ship slice (notify end-to-end), ship skeleton-only, or one tweak?"
+}
