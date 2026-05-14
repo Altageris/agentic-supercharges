@@ -6,6 +6,7 @@ Custom Claude Code skills for high-velocity development.
 
 | Skill | Purpose | Turns |
 |-------|---------|-------|
+| **bfs** | Breadth-first explanations in checkpointed steps; batch delivery for agents with cost optimization; feedback collection for skill improvement | 5 |
 | **three-turn-design** | UI/visual work shipping | 3 |
 | **three-turn-architecture** | Architectural decisions | 3 |
 | **four-turn-architecture** | Architectural decisions with a dedicated Turn 2 rigor checkpoint (experimental sibling of three-turn-architecture) | 4 |
@@ -17,13 +18,14 @@ Custom Claude Code skills for high-velocity development.
 Copy skills to `~/.claude/skills/`:
 
 ```bash
+cp -r bfs ~/.claude/skills/
 cp -r three-turn-* ~/.claude/skills/
 cp -r four-turn-* ~/.claude/skills/
 cp -r exp ~/.claude/skills/
 cp -r anonymize ~/.claude/skills/
 ```
 
-Invoke in Claude Code: `/three-turn-design`, `/three-turn-architecture`, `/exp`, etc.
+Invoke in Claude Code: `/bfs`, `/three-turn-design`, `/three-turn-architecture`, `/exp`, etc.
 
 ## Each Skill Includes
 
