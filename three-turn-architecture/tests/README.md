@@ -2,13 +2,23 @@
 
 Each scenario is a fixed user-prompt sequence that exercises one compression rule. Run them against the skill in a fresh session, follow the prompts in order, and log every deviation in `observation-log.md`.
 
+## Prerequisite: load `/exp`
+
+Before running any scenario in this folder:
+
+1. Install or copy the `exp` skill into the active client skill directory.
+2. Reload the client config so `/exp` is available in a fresh session.
+3. Verify `/exp` resolves before running the architecture scenario.
+
 ## How to run
 
 1. Pick a scenario file. Read its **Setup** section — make sure the preconditions hold (preferences file present/absent, repo state, etc.).
 2. Open a fresh session in the target project.
-3. Paste the scenario's **User prompt** verbatim (or the variant you want to test).
-4. Follow the **Expected user reply** lines exactly when the skill asks.
-5. After the session, open `observation-log.md` and append a run report using the template at the top of that file.
+3. Set `live_subagent_creation` from the scenario header.
+4. Paste the scenario's **User prompt** verbatim (or the variant you want to test).
+5. Follow the **Expected user reply** lines exactly when the skill asks.
+6. When a scenario includes a follow-up `/exp` pass, send `/exp` in the same session after the main arc completes.
+7. After the session, open `observation-log.md` and append a run report using the template at the top of that file.
 
 ## What the scenarios cover
 
@@ -19,6 +29,7 @@ Each scenario is a fixed user-prompt sequence that exercises one compression rul
 | 02-slice-too-big | Auto-degrade from B (skeleton+slice) to A (skeleton-only) when slice crosses multiple boundaries |
 | 03-exploration-routing | Routing to `superpowers:brainstorming` when the prompt is exploratory ("how should we architect…") |
 | 04-perf-diagnosis | Constraint = performance; verifying the skill grounds the perf envelope in measurements, not guesses |
+| 05-exp-reanchor | `/exp` after a completed three-turn run should name one unresolved adjacent seam, not reopen settled interfaces |
 
 ## Anti-pattern signals to watch for
 
@@ -32,5 +43,6 @@ Across every scenario, log if the skill:
 - Wrote a boundary without timeout + retry + idempotency
 - Shipped a slice that should have auto-degraded
 - Reopened a settled fork after the user picked
+- Ignored the `live_subagent_creation` toggle
 
 Repeated drifts → tighten the rule in `SKILL.md`. Append a `Skill change` entry to the observation log.

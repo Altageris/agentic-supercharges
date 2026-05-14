@@ -2,6 +2,19 @@
 
 Same testing methodology as `three-turn-architecture/tests/`. Run scenarios in fresh sessions, follow the prompts, log every deviation in `observation-log.md`.
 
+## Prerequisite: load `/exp`
+
+Before running any scenario in this folder:
+
+1. Install or copy the `exp` skill into the active client skill directory.
+2. Reload the client config so `/exp` is available in a fresh session.
+3. Verify `/exp` resolves before running the four-turn scenario.
+
+Use the per-scenario `live_subagent_creation` toggle:
+
+- `false` for bulk or baseline runs
+- `true` for `/exp`-driven follow-up runs where you want to observe live delegation behavior
+
 ## Scenarios
 
 | Scenario | Status | Tests |
@@ -11,6 +24,7 @@ Same testing methodology as `three-turn-architecture/tests/`. Run scenarios in f
 | 03-exploration-routing | TODO (clone from parent) | Refuse-to-`brainstorming` routing — should be identical behavior |
 | 04-perf-diagnosis | TODO (clone from parent) | Perf-grounded fork, with Turn 2 verifying perf envelope quantification |
 | **05-rigor-checkpoint** | **Live** | Tests Turn 2 mechanic — the whole reason this skill exists |
+| **06-exp-reanchor** | **Live** | `/exp` after the four-turn arc should name one unresolved adjacent seam without reopening Turn 2 corrections |
 
 For now, the load-bearing scenario is **05**. The four cloned scenarios are useful for regression testing the unchanged turns but aren't required to start collecting comparison data.
 

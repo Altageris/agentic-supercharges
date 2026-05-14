@@ -29,6 +29,8 @@ Invoke in Claude Code: `/three-turn-design`, `/three-turn-architecture`, etc.
 - `tests/` — observation logs & scenarios
 - `companion/` — visual rendering (architecture skills)
 
+The scenario folders now also include `/exp` re-anchoring coverage: load the `exp` skill, reload the client config, then run the paired follow-up in the same session to verify that the next surface is narrowed correctly.
+
 ## Usage Notes
 
 All skills require a `*-defaults.md` file in your project (or home directory) with binding preferences/invariants. Templates provided in each skill directory.

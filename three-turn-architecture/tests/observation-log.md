@@ -13,7 +13,9 @@ Copy this block per run. Fill in honestly. The skill improves from honest deviat
 **Project:** <repo or path>
 **Defaults file:** present | absent | stale
 **Model:** Opus 4.X | Sonnet 4.X | Haiku 4.X
+**`live_subagent_creation`:** true | false
 **User-facing turns consumed:** N (target: 3)
+**Follow-up `/exp` run:** Y/N
 
 #### Turn 1
 - Constraint named: <one-line>
@@ -46,7 +48,14 @@ Copy this block per run. Fill in honestly. The skill improves from honest deviat
 - Smoke test against slice (if B) or stubs (if A): Y/N
 - Service restarted (if applicable): Y/N
 - Permission asked for any lifecycle action: Y/N
+- Live subagent created when toggle was true: Y/N | n/a
 - Parked items re-surfaced: list
+
+#### `/exp` follow-up (if run)
+- `/exp` result type: reaffirm current surface | replace with better surface | concrete blocker
+- Named exactly one next surface: Y/N
+- Reopened a settled interface, default, or parked decision: Y/N
+- Next surface matched the nearest unresolved seam: Y/N
 
 #### Deviations
 <List every place the skill drifted from the rules. Quote the offending response if useful.>
@@ -64,6 +73,9 @@ Copy this block per run. Fill in honestly. The skill improves from honest deviat
 - [ ] Invariant treated as consultative
 - [ ] Tangent surfaced instead of parked
 - [ ] Scope expansion ("while I was in there…")
+- [ ] `/exp` reopened a settled surface
+- [ ] `/exp` named more than one next surface
+- [ ] Live subagent toggle ignored
 
 #### Verdict
 - [ ] Clean compression — no skill changes needed

@@ -13,7 +13,9 @@ Copy this block per run. Fill in honestly. The skill improves from honest deviat
 **Project:** <repo or path>
 **Preferences file:** present | absent | stale
 **Model:** Opus 4.X | Sonnet 4.X | Haiku 4.X
+**`live_subagent_creation`:** true | false
 **User-facing turns consumed:** N (target: 3)
+**Follow-up `/exp` run:** Y/N
 
 #### Turn 1
 - Diagnosis surfaced: <one-line>
@@ -36,7 +38,14 @@ Copy this block per run. Fill in honestly. The skill improves from honest deviat
 - Server restarted: Y/N
 - Permission asked for any lifecycle action: Y/N
 - Grace notes applied (if requested): Y/N
+- Live subagent created when toggle was true: Y/N | n/a
 - Parked items re-surfaced: list
+
+#### `/exp` follow-up (if run)
+- `/exp` result type: reaffirm current surface | replace with better surface | concrete blocker
+- Named exactly one next surface: Y/N
+- Reopened a settled visual decision or default: Y/N
+- Next surface matched the nearest unresolved seam: Y/N
 
 #### Deviations
 <List every place the skill drifted from the rules. Be specific — quote the offending response if useful.>
@@ -49,6 +58,9 @@ Copy this block per run. Fill in honestly. The skill improves from honest deviat
 - [ ] Preference rule treated as consultative
 - [ ] Tangent surfaced instead of parked
 - [ ] Grace-note triggered Turn 4
+- [ ] `/exp` reopened a settled surface
+- [ ] `/exp` named more than one next surface
+- [ ] Live subagent toggle ignored
 
 #### Verdict
 - [ ] Clean compression — no skill changes needed

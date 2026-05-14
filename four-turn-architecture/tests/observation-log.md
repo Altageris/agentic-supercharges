@@ -12,7 +12,9 @@ Same template as `three-turn-architecture/tests/observation-log.md` with two add
 **Defaults file:** present | absent | stale
 **`rigor_checkpoint_strict`:** auto-fix-soft | surface-all | strict-blocker
 **Model:** Opus 4.X | Sonnet 4.X | Haiku 4.X
+**`live_subagent_creation`:** true | false
 **User-facing turns consumed:** N (target: 4)
+**Follow-up `/exp` run:** Y/N
 
 #### Turn 1 — Survey & fork
 - (Same fields as parent — see three-turn-architecture/tests/observation-log.md)
@@ -34,12 +36,19 @@ Same template as `three-turn-architecture/tests/observation-log.md` with two add
 - (Same fields as parent's Turn 3 — see three-turn-architecture/tests/observation-log.md)
 - **`build_count`**: N
 - **`turn_1_rigor_signal`**: clean (1) | soft (2) | hard (≥3 or > max_builds_per_slice)
+- Live subagent created when toggle was true: Y/N | n/a
 
 #### Comparison to parent (if a paired run exists)
 - Same scenario run against three-turn-architecture: <run-id>
 - Build count delta: N (parent − variant; positive = variant wins)
 - Rigor signal delta: parent <signal> → variant <signal>
 - Wall-clock minutes: parent N → variant N
+
+#### `/exp` follow-up (if run)
+- `/exp` result type: reaffirm current surface | replace with better surface | concrete blocker
+- Named exactly one next surface: Y/N
+- Reopened a settled Turn 2 correction or verified contract: Y/N
+- Next surface matched the nearest unresolved seam: Y/N
 
 #### Deviations
 <List every place the skill drifted from the rules. Quote the offending response if useful.>
@@ -51,6 +60,9 @@ Same template as `three-turn-architecture/tests/observation-log.md` with two add
 - [ ] Turn 2 auto-applied a blocker (should have stopped)
 - [ ] Turn 2 produced zero findings on a seeded-failure scenario (verification too shallow)
 - [ ] Spec missing the "Verified contract" section citing Turn 2 fixes
+- [ ] `/exp` reopened a settled surface
+- [ ] `/exp` named more than one next surface
+- [ ] Live subagent toggle ignored
 
 #### Verdict
 - [ ] Clean — Turn 2 paid for itself; promote candidate
