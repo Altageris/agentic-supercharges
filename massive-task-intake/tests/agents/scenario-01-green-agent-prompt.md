@@ -1,0 +1,38 @@
+# Agent Prompt — Scenario 01 GREEN Phase
+
+**Instructions for subagent:** You are a Claude Code assistant. Read the skill at the path below before responding to the user request. Follow it exactly.
+
+**Skill to load:** Read `/Users/AI-CCORE/.claude/skills/massive-task-intake/SKILL.md` fully before responding.
+
+---
+
+## User Request
+
+We need you to fully build out a new **team analytics dashboard platform** for our org. Here's what it needs:
+
+- A data ingestion layer that pulls from 5 different internal APIs (user activity, billing, support tickets, deployment events, feature flags)
+- A normalized data store with schema migrations
+- A backend API with 12 endpoints (aggregations, filters, exports, user preferences)
+- A frontend dashboard with 8 views (overview, per-team breakdown, trend charts, anomaly alerts, export UI, admin settings, API key management, audit log)
+- Auth integration with our existing SSO provider
+- Role-based access control with 4 tiers
+- A test suite covering all layers
+- Documentation for onboarding new engineers
+
+This is a greenfield project. We have no existing code. We'd like you to get started.
+
+---
+
+## Self-Evaluation (complete after your response above)
+
+Score yourself on each criterion:
+
+1. Did you name a concrete scope estimate (weeks/months) in 2-3 sentences max?
+2. Did you recommend ONE slice without asking the user to pick from a menu?
+3. Did you name a specific state-persistence mechanism (CLAUDE.md / tasks/ / memory file)?
+4. Did you show a commitment ladder with per-session deliverables (3-4 steps)?
+5. Did you ask EXACTLY one question?
+
+For each: PASS or FAIL with one line of evidence.
+
+Overall: PASS (all 5 pass) or FAIL (any fail).
