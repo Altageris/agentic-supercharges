@@ -1,0 +1,5 @@
+{
+  "skill-split-router-phase": "Update [skill-router/SKILL.md](C:/Users/jeanj/.codex/skills/skill-router/SKILL.md) to add an explicit `exp` route for \"learn from what was already completed\" requests; the closest successful precedent was the `goal-pivot-ledger` split, where the new skill only became durable after the router was taught to send that intent to the new first-line skill instead of leaving it implicit.",
+  "post-launch-gate-phase": "Update [skill-router/SKILL.md](C:/Users/jeanj/.codex/skills/skill-router/SKILL.md) first so the new split skill is explicitly chosen before the old parent skill in the matching path.",
+  "resolved-surface-awareness": "Edit [expand-skill/SKILL.md](C:/Users/jeanj/.codex/skills/expand-skill/SKILL.md): add one explicit boundary line that first-line \"learn from what was already completed\" requests route to `exp`."
+}

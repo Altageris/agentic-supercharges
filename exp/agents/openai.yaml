@@ -1,0 +1,4 @@
+interface:
+  display_name: "Expand From Experience"
+  short_description: "Learn from prior completed work"
+  default_prompt: "Use $exp to find the closest prior completed work, extract the reusable local pattern, expand only enough to identify the next actionable surface, and optionally re-run every k turns with editable k."

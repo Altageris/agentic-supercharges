@@ -1,0 +1,230 @@
+{
+  "name": "exp-regression-suite",
+  "cases": [
+    {
+      "id": "skill-split-router-phase",
+      "generation": 1,
+      "dimension": "resolved_state_awareness",
+      "prompt": "We just split a new skill from an old one. Learn from what was already completed and tell me the smallest next thing to do so we do not repeat old mistakes.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md"
+      ],
+      "acceptableNextSurfaces": [
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md"
+      ],
+      "forbiddenPhrases": [
+        "broad retrospective",
+        "more research"
+      ],
+      "maxLines": 8,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "post-launch-gate-phase",
+      "generation": 1,
+      "dimension": "resolved_state_awareness",
+      "prompt": "We already fixed ownership, router, planner, and launch gate propagation. Learn from what was already completed and tell me the smallest next thing to do so we do not repeat old mistakes.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs"
+      ],
+      "acceptableNextSurfaces": [
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "forbiddenPhrases": [
+        "broad retrospective",
+        "more research"
+      ],
+      "maxLines": 8,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "resolved-surface-awareness",
+      "generation": 1,
+      "dimension": "resolved_state_awareness",
+      "prompt": "We already fixed skill ownership, routing, planner propagation, launch propagation, coordinator propagation, and old expansion-skill boundaries. Learn from what was already completed and return the smallest next thing without resurfacing any completed seam.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "acceptableNextSurfaces": [
+        "blocked",
+        "no further unresolved propagation seam",
+        "next unresolved seam"
+      ],
+      "forbiddenPhrases": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "maxLines": 8,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "generation-2-router-plus-planner",
+      "generation": 2,
+      "dimension": "resolved_state_awareness",
+      "composedFrom": [
+        "skill-split-router-phase",
+        "post-launch-gate-phase"
+      ],
+      "prompt": "We just split a new skill from an old one, and we already fixed ownership, router, planner, and launch gate propagation. Learn from what was already completed and tell me the smallest next thing to do so we do not repeat old mistakes.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs"
+      ],
+      "acceptableNextSurfaces": [
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md",
+        "no further unresolved propagation seam",
+        "blocked"
+      ],
+      "forbiddenPhrases": [
+        "broad retrospective",
+        "more research",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs"
+      ],
+      "maxLines": 10,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "generation-2-full-propagation",
+      "generation": 2,
+      "dimension": "resolved_state_awareness",
+      "composedFrom": [
+        "post-launch-gate-phase",
+        "resolved-surface-awareness"
+      ],
+      "prompt": "We already fixed ownership, router, planner, launch propagation, coordinator propagation, and old expansion-skill boundaries. Learn from what was already completed and return the smallest next thing without resurfacing any completed seam.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "acceptableNextSurfaces": [
+        "blocked",
+        "no further unresolved propagation seam",
+        "next unresolved seam"
+      ],
+      "forbiddenPhrases": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "maxLines": 10,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "generation-2-split-plus-resolved",
+      "generation": 2,
+      "dimension": "resolved_state_awareness",
+      "composedFrom": [
+        "skill-split-router-phase",
+        "resolved-surface-awareness"
+      ],
+      "prompt": "We just split a new skill from an old one, and we already fixed skill ownership, routing, planner propagation, launch propagation, coordinator propagation, and old expansion-skill boundaries. Learn from what was already completed and return the smallest next thing without resurfacing any completed seam.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "acceptableNextSurfaces": [
+        "blocked",
+        "no further unresolved propagation seam",
+        "next unresolved seam"
+      ],
+      "forbiddenPhrases": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "maxLines": 10,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "quality-minimal-adjacent-hop",
+      "generation": 1,
+      "dimension": "next_surface_quality",
+      "prompt": "We fixed router ownership already. Learn from what was completed and pick the smallest adjacent unresolved seam, not a broad follow-up.",
+      "resolvedSurfaces": [
+        "skill-router/SKILL.md"
+      ],
+      "acceptableNextSurfaces": [
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs"
+      ],
+      "forbiddenPhrases": [
+        "broad retrospective",
+        "more research",
+        "architecture review"
+      ],
+      "maxLines": 8,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    },
+    {
+      "id": "quality-block-when-graph-is-clean",
+      "generation": 1,
+      "dimension": "next_surface_quality",
+      "prompt": "Assume all known ownership, router, planner, launch, coordinator, and fallback-boundary seams are fixed. Learn from what was completed and choose the smallest next move.",
+      "resolvedSurfaces": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md"
+      ],
+      "acceptableNextSurfaces": [
+        "blocked",
+        "no further unresolved propagation seam"
+      ],
+      "forbiddenPhrases": [
+        "expand-skill-advanced/SKILL.md",
+        "skill-router/SKILL.md",
+        "build-execution-plan.mjs",
+        "launch-execution-plan.mjs",
+        "subagent-coordinator/SKILL.md",
+        "expand-skill/SKILL.md",
+        "more research"
+      ],
+      "maxLines": 8,
+      "strictResolvedSurfaceFilter": true,
+      "passThreshold": 0.85
+    }
+  ]
+}
