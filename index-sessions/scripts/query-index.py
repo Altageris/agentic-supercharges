@@ -128,47 +128,86 @@ def extract_context(jsonl_path: str, keywords: list[str]) -> dict:
     return result
 
 
+def parse_args(argv):
+    import argparse
+    p = argparse.ArgumentParser(
+        description='Query session index',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    p.add_argument('keywords', nargs='*', help='Keywords to search for')
+    p.add_argument('--json', action='store_true',
+                   help='Compact JSON output (~150 tokens/session) for agent use')
+    p.add_argument('--limit', type=int, default=3, metavar='N',
+                   help='Max sessions to return (default: 3)')
+    p.add_argument('--window', type=int, default=2, metavar='N',
+                   help='Messages of context around match (default: 2, use 1 to halve token cost)')
+    return p.parse_args(argv)
+
+
 def main():
     if not os.path.exists(NDJSON):
         print('No index found. Run: python3 build-index.py')
         sys.exit(1)
 
-    keywords = sys.argv[1:]
-    if not keywords:
-        print('Usage: query-index.py <keyword> [keyword2 ...]')
+    args = parse_args(sys.argv[1:])
+
+    if not args.keywords:
+        print('Usage: query-index.py <keyword> [keyword2 ...] [--json] [--limit N] [--window N]')
         sys.exit(1)
 
-    matches = search_index(keywords)
+    # Override module-level WINDOW if flag passed
+    global WINDOW
+    WINDOW = args.window
+
+    matches = search_index(args.keywords)
 
     if not matches:
-        print(f'No sessions found matching: {" ".join(keywords)}')
+        if args.json:
+            print(json.dumps({'matches': [], 'keywords': args.keywords}))
+        else:
+            print(f'No sessions found matching: {" ".join(args.keywords)}')
         sys.exit(0)
 
-    print(f'Found {len(matches)} session(s) matching: {" ".join(keywords)}\n')
-
-    for m in matches[:5]:
+    results = []
+    for m in matches[:args.limit]:
         sid = m['id']
-        print('─' * 70)
-        print(f'Session  : {sid}')
-        print(f'Project  : {m["project"]}')
-        print(f'Started  : {m.get("started", "unknown")}')
-        print(f'Skills   : {", ".join(m.get("skills_used", [])) or "—"}')
-        print(f'Artifacts: {", ".join(m.get("artifacts", [])) or "—"}')
-        print(f'Resume   : {m["resume"]}')
-
         jsonl = find_jsonl(sid)
-        if jsonl:
-            ctx = extract_context(jsonl, keywords)
-            if ctx.get('arc_open'):
-                print(f'\nArc open : {repr(ctx["arc_open"])}')
-            if ctx.get('arc_close'):
-                print(f'Arc close: {repr(ctx["arc_close"])}')
-            if ctx.get('match_window'):
-                print('\nMatch context:')
-                for line in ctx['match_window']:
-                    print(f'  {line}')
-        else:
-            print('  (raw session file not found — index context only)')
+        ctx = extract_context(jsonl, args.keywords) if jsonl else {}
+        results.append({
+            'id': sid,
+            'project': m['project'],
+            'started': m.get('started'),
+            'skills_used': m.get('skills_used', []),
+            'artifacts': m.get('artifacts', []),
+            'resume': m['resume'],
+            'arc_open': ctx.get('arc_open'),
+            'arc_close': ctx.get('arc_close'),
+            'match_window': ctx.get('match_window', []),
+        })
+
+    if args.json:
+        print(json.dumps({'keywords': args.keywords, 'matches': results}, indent=2))
+        return
+
+    print(f'Found {len(matches)} session(s) matching: {" ".join(args.keywords)}'
+          f' (showing {min(len(matches), args.limit)}, window={WINDOW})\n')
+
+    for r in results:
+        print('─' * 70)
+        print(f'Session  : {r["id"]}')
+        print(f'Project  : {r["project"]}')
+        print(f'Started  : {r["started"] or "unknown"}')
+        print(f'Skills   : {", ".join(r["skills_used"]) or "—"}')
+        print(f'Artifacts: {", ".join(r["artifacts"]) or "—"}')
+        print(f'Resume   : {r["resume"]}')
+        if r.get('arc_open'):
+            print(f'\nArc open : {repr(r["arc_open"])}')
+        if r.get('arc_close'):
+            print(f'Arc close: {repr(r["arc_close"])}')
+        if r.get('match_window'):
+            print('\nMatch context:')
+            for line in r['match_window']:
+                print(f'  {line}')
         print()
 
 
