@@ -17,6 +17,7 @@ HOME         = str(Path.home())
 PROJECTS_DIR = os.path.join(HOME, '.claude', 'projects')
 SNAPSHOTS    = os.path.join(HOME, '.claude', 'snapshots')
 LAST_N       = 12   # messages to include in recent log
+MAX_FILES    = 10   # default cap on files-touched list
 
 
 def find_current_jsonl() -> tuple[str, str] | tuple[None, None]:
@@ -128,7 +129,7 @@ def detect_pending(messages: list[tuple[str, str]]) -> list[str]:
     return hits[-5:]  # max 5
 
 
-def write_snapshot(sid: str, jsonl_path: str):
+def write_snapshot(sid: str, jsonl_path: str, max_files: int = MAX_FILES, last_n: int = LAST_N):
     os.makedirs(SNAPSHOTS, exist_ok=True)
     out_path = os.path.join(SNAPSHOTS, f'{sid}.md')
 
@@ -136,7 +137,7 @@ def write_snapshot(sid: str, jsonl_path: str):
     project  = decode_project_path(encoded)
     snap     = extract_snapshot(jsonl_path)
 
-    recent   = snap['messages'][-LAST_N:]
+    recent   = snap['messages'][-last_n:]
     pending  = detect_pending(snap['messages'])
     now      = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -157,9 +158,15 @@ def write_snapshot(sid: str, jsonl_path: str):
         lines.append('')
 
     if snap['files_touched']:
-        lines += [f'## Files Touched', '']
-        for fp in snap['files_touched']:
+        files = snap['files_touched']
+        capped = (max_files > 0) and (len(files) > max_files)
+        shown = files[:max_files] if capped else files
+        header = f'## Files Touched ({len(files)} total, showing {len(shown)})' if capped else '## Files Touched'
+        lines += [header, '']
+        for fp in shown:
             lines.append(f'- {fp}')
+        if capped:
+            lines.append(f'- … {len(files) - max_files} more omitted (pass --max-files 0 for all)')
         lines.append('')
 
     if pending:
@@ -183,8 +190,18 @@ def write_snapshot(sid: str, jsonl_path: str):
 
 
 def main():
-    if len(sys.argv) > 1:
-        sid = sys.argv[1]
+    import argparse
+    p = argparse.ArgumentParser(description='Snapshot current Claude Code session')
+    p.add_argument('session_id', nargs='?', help='Session ID (default: auto-detect)')
+    p.add_argument('--max-files', type=int, default=MAX_FILES, metavar='N',
+                   help=f'Max files to list (default: {MAX_FILES}, 0 = unlimited)')
+    p.add_argument('--last', type=int, default=LAST_N, metavar='N',
+                   help=f'Messages to include (default: {LAST_N})')
+    args = p.parse_args()
+    last_n = args.last
+
+    if args.session_id:
+        sid = args.session_id
         # Find jsonl from explicit sid
         jsonl = None
         for root, dirs, files in os.walk(PROJECTS_DIR):
@@ -206,7 +223,7 @@ def main():
             sys.exit(1)
         print(f'Auto-detected session: {sid}')
 
-    write_snapshot(sid, jsonl)
+    write_snapshot(sid, jsonl, max_files=args.max_files, last_n=last_n)
 
 
 if __name__ == '__main__':
