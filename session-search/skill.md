@@ -37,6 +37,14 @@ find ~/.claude/projects -maxdepth 2 -name "*.jsonl" -not -path "*/subagents/*" -
 
 If **no keywords** given, skip grep — carry all files from `find` forward.
 
+**Index fallback** — if all-time grep still returns nothing and keywords were given, query the session index:
+
+```bash
+python3 ~/.claude/skills/index-sessions/scripts/query-index.py <keyword> [keyword2 ...] --limit 5
+```
+
+If the index also returns nothing, report "no sessions found" and ask for different terms. Do not attempt further expansion.
+
 ---
 
 ### Step 2 — Extract first meaningful user messages (matched files only)
