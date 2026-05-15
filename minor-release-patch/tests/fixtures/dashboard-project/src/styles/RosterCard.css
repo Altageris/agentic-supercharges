@@ -1,0 +1,48 @@
+/* Roster card layout — design track target: reduce whitespace */
+
+.roster-card {
+  padding: 12px 16px;          /* was 48px 40px */
+  margin-bottom: 8px;           /* was 32px */
+  background: #ffffff;
+  border: 1px solid #e2e8f0;   /* was #e0e0e0 */
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;                    /* was 24px */
+  max-width: 320px;
+}
+
+.roster-card__avatar {
+  width: 40px;                  /* was 64px */
+  height: 40px;                 /* was 64px */
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.roster-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.roster-card__name {
+  font-size: 14px;              /* was 18px */
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1e293b;
+  margin-bottom: 0;             /* was 16px */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-card__role {
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}

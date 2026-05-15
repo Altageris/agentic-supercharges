@@ -1,0 +1,24 @@
+/* Roster card layout — design track target: reduce whitespace */
+
+.roster-card {
+  padding: 48px 40px;       /* too large — design track should tighten this */
+  margin-bottom: 32px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.roster-card__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
+
+.roster-card__name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;      /* excessive bottom margin */
+}
