@@ -70,7 +70,7 @@ def extract_session(path: str) -> dict | None:
 
             t = obj.get('type', '')
 
-            # User messages → preview + topic signals
+            # User messages — collect all for recent_preview, no early break
             if t == 'user':
                 c = obj.get('message', {}).get('content', '')
                 blocks = c if isinstance(c, list) else [{'type': 'text', 'text': c}]
@@ -80,8 +80,6 @@ def extract_session(path: str) -> dict | None:
                         if not text.startswith('<') and len(text) > 10:
                             msgs.append(text[:200])
                             break
-                if len(msgs) >= 5:
-                    break
 
             # Tool use → skill invocations + file artifacts
             if t == 'assistant':
@@ -114,14 +112,15 @@ def extract_session(path: str) -> dict | None:
     topics = list(skills)[:5] + list(artifacts)[:5]
 
     return {
-        'id':          sid,
-        'project':     project,
-        'started':     started,
-        'topics':      topics,
-        'artifacts':   sorted(artifacts)[:10],
-        'skills_used': sorted(skills),
-        'preview':     msgs[:2],
-        'resume':      resume,
+        'id':             sid,
+        'project':        project,
+        'started':        started,
+        'topics':         topics,
+        'artifacts':      sorted(artifacts)[:10],
+        'skills_used':    sorted(skills),
+        'preview':        msgs[:2],
+        'recent_preview': msgs[-5:] if len(msgs) > 2 else [],
+        'resume':         resume,
     }
 
 

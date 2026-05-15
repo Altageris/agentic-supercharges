@@ -180,6 +180,7 @@ def main():
             'skills_used': m.get('skills_used', []),
             'artifacts': m.get('artifacts', []),
             'resume': m['resume'],
+            'recent_preview': m.get('recent_preview', []),
             'arc_open': ctx.get('arc_open'),
             'arc_close': ctx.get('arc_close'),
             'match_window': ctx.get('match_window', []),
@@ -200,6 +201,10 @@ def main():
         print(f'Skills   : {", ".join(r["skills_used"]) or "—"}')
         print(f'Artifacts: {", ".join(r["artifacts"]) or "—"}')
         print(f'Resume   : {r["resume"]}')
+        if r.get('recent_preview'):
+            print(f'\nRecent   :')
+            for msg in r['recent_preview']:
+                print(f'  > {repr(msg)}')
         if r.get('arc_open'):
             print(f'\nArc open : {repr(r["arc_open"])}')
         if r.get('arc_close'):
