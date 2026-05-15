@@ -82,7 +82,28 @@ Use the same confidence scoring as `session-search`:
 - Rolling 90-day window by default — pass `build-index.py 365` for a full-year index
 - Index is append-only (new sessions prepended); no dedup needed within a window
 
+## Compaction Recovery
+
+When a session approaches context limits, snapshot it before it compresses:
+
+```bash
+python3 ~/.claude/skills/index-sessions/scripts/snapshot-session.py
+# auto-detects the current session by most-recent JSONL mtime
+
+python3 ~/.claude/skills/index-sessions/scripts/snapshot-session.py <session-id>
+# explicit session ID if known
+```
+
+Writes `~/.claude/snapshots/<session-id>.md` containing:
+- Skills used + files touched this session
+- Last 12 messages verbatim
+- Pending/next-step language detected from final exchanges
+- Resume command
+
+The next session can read this file directly to recover context. Snapshots complement the index — index for finding sessions across time, snapshot for recovery within a session.
+
 ## Scripts
 
 - `scripts/build-index.py` — builds/updates index
 - `scripts/query-index.py` — queries index by keyword
+- `scripts/snapshot-session.py` — pre-compaction checkpoint → `~/.claude/snapshots/<sid>.md`
