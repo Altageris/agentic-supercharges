@@ -1,0 +1,169 @@
+{
+  "timestamp": "2026-05-16T04:48:20.142129",
+  "target": "/Users/AI-CCORE/altageris/AICCORE/AgentBuilder",
+  "total_files": 490,
+  "files_analyzed": 20,
+  "documents": [
+    {
+      "file": ".aiccore/TEST_RESULTS_2026-05-16.md",
+      "size": 7481,
+      "word_count": 901,
+      "jargon_density": "0.1%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": ".aiccore/TEST_SCENARIO_2026-05-16.md",
+      "size": 6120,
+      "word_count": 647,
+      "jargon_density": "0.0%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": ".aiccore/WORKTREE_LIFECYCLE_LOG.md",
+      "size": 2497,
+      "word_count": 258,
+      "jargon_density": "1.6%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": ".aiccore/WORKTREE_MANAGER_USER_GUIDE.md",
+      "size": 3471,
+      "word_count": 423,
+      "jargon_density": "0.9%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": ".claude/architecture-defaults.md",
+      "size": 5114,
+      "word_count": 732,
+      "jargon_density": "1.9%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": ".pytest_cache/README.md",
+      "size": 302,
+      "word_count": 40,
+      "jargon_density": "0.0%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "README.md",
+      "size": 2260,
+      "word_count": 287,
+      "jargon_density": "2.8%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/.pytest_cache/README.md",
+      "size": 302,
+      "word_count": 40,
+      "jargon_density": "0.0%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/README.md",
+      "size": 12785,
+      "word_count": 1662,
+      "jargon_density": "1.6%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/README.md",
+      "size": 6955,
+      "word_count": 957,
+      "jargon_density": "0.4%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/design-defaults.md",
+      "size": 5253,
+      "word_count": 697,
+      "jargon_density": "0.1%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/SKILL_OBSERVATION_LOG.md",
+      "size": 4472,
+      "word_count": 594,
+      "jargon_density": "0.5%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/copy-audit_plan.md",
+      "size": 7063,
+      "word_count": 967,
+      "jargon_density": "0.8%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/sound-effects-setup.md",
+      "size": 2707,
+      "word_count": 392,
+      "jargon_density": "3.8%",
+      "passes_planned": 1,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/superpowers/specs/2026-05-08-admin-settings-reorg-design.md",
+      "size": 11244,
+      "word_count": 1412,
+      "jargon_density": "2.1%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/superpowers/specs/2026-05-12-agent-arena-battle-display-design.md",
+      "size": 9404,
+      "word_count": 1368,
+      "jargon_density": "0.0%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/superpowers/specs/2026-05-12-agent-arena-video-generator-design.md",
+      "size": 6258,
+      "word_count": 900,
+      "jargon_density": "0.0%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/superpowers/specs/2026-05-12-arena-aggressive-dynamism-design.md",
+      "size": 6675,
+      "word_count": 1047,
+      "jargon_density": "0.0%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/superpowers/specs/2026-05-12-arena-heat-map-intensity.md",
+      "size": 5557,
+      "word_count": 842,
+      "jargon_density": "0.0%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    },
+    {
+      "file": "aiccore/dashboard/museum-arena-dashboard/docs/superpowers/specs/2026-05-12-arena-particle-burst-expansion.md",
+      "size": 4980,
+      "word_count": 751,
+      "jargon_density": "0.0%",
+      "passes_planned": 2,
+      "status": "pending-accessibility-pass"
+    }
+  ],
+  "next_action": "Apply accessible-document-generation to all docs on next creation/update"
+}

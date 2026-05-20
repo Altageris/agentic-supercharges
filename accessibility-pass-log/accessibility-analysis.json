@@ -1,0 +1,68 @@
+{
+  "analysis_type": "accessibility-pass-pre-execution",
+  "timestamp": "2026-05-16T04:37:01.011249",
+  "target_path": "reports/active",
+  "files_analyzed": 2,
+  "reports": [
+    {
+      "file": "commit-equivalence-analysis.html",
+      "file_size": 13945,
+      "word_count": 1256,
+      "jargon_density": "3.1%",
+      "structure": {
+        "headers": 36,
+        "tables": 1,
+        "code_blocks": 0,
+        "nesting_depth": 3
+      },
+      "accessibility_gaps": [
+        "No alt text on images",
+        "No navigation/TOC",
+        "Table headers not scoped"
+      ],
+      "audience_coverage": [
+        "developers"
+      ],
+      "passes_planned": 3
+    },
+    {
+      "file": "comparative-normalization-analysis.html",
+      "file_size": 23113,
+      "word_count": 2178,
+      "jargon_density": "2.8%",
+      "structure": {
+        "headers": 35,
+        "tables": 1,
+        "code_blocks": 0,
+        "nesting_depth": 3
+      },
+      "accessibility_gaps": [
+        "No alt text on images",
+        "No navigation/TOC",
+        "Table headers not scoped"
+      ],
+      "audience_coverage": [
+        "researchers",
+        "developers",
+        "architects"
+      ],
+      "passes_planned": 4
+    }
+  ],
+  "aggregate_stats": {
+    "total_jargon_density": "3.0%",
+    "avg_passes_needed": 3.5,
+    "total_accessibility_gaps": 6,
+    "audience_types_detected": [
+      "developers",
+      "architects",
+      "researchers"
+    ]
+  },
+  "recommendations": [
+    "Pass 1 (Structural): Add navigation aids, section markers",
+    "Pass 2 (Terminology): Create glossary for technical terms (anonymization, structural, etc.)",
+    "Pass 4 (Annotation): Add alt text, audience segmentation (researchers vs developers)",
+    "Pass 5 (Segmentation): Create researcher-focused and developer-focused versions"
+  ]
+}
