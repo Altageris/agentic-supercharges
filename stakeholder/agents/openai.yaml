@@ -1,0 +1,7 @@
+interface:
+  display_name: "Stakeholder Review"
+  short_description: "Review systems with evidence and risk"
+  default_prompt: "Use $stakeholder to review the current system, score evidence, surface risks, and recommend next actions."
+
+policy:
+  allow_implicit_invocation: true

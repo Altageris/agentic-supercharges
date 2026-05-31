@@ -1,0 +1,4 @@
+interface:
+  display_name: "Subagent Coordinator"
+  short_description: "Route models and context across worker branches"
+  default_prompt: "Use $subagent-coordinator to assign Codex models and branch-local context across preidentified coding tasks."

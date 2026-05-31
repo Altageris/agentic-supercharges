@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release Lint Branch"
+  short_description: "Run branch-scoped release validation summaries."
+  default_prompt: "Use $release-lint-branch to run branch-scoped release validation, summarize blocker buckets, and decide commit readiness."

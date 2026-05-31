@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stategraph"
+  short_description: "Trace state roots and post-await mutations."
+  default_prompt: "Use $stategraph to analyze durable state roots, async settlement blocks, and post-await mutations in this codebase."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Archive Update"
+  short_description: "Archive current Codex installs before updating"
+  default_prompt: "Use this skill to archive the current Codex install as a zip before any update or reinstall, preserving the original version and honoring configurable package root and archive root settings."

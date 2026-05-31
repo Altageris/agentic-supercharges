@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Session Search"
+  short_description: "Search Codex sessions and return resume commands"
+  default_prompt: "Find previous Codex sessions by keyword, date, or project and return the exact resume command."

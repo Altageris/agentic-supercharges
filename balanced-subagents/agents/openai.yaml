@@ -1,0 +1,4 @@
+interface:
+  display_name: "Balanced Subagents"
+  short_description: "Spread work evenly across mini subagents."
+  default_prompt: "Use this skill to decompose work into similarly sized independent branches, spread effort evenly across mini subagents by default, avoid overloading one branch owner, and rebalance work when one branch becomes much heavier than the others."

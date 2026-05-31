@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codegraph"
+  short_description: "Query TS contact graphs and bucket anchors."
+  default_prompt: "Use $codegraph to map TypeScript contact surfaces, callers, imports, and release bucket anchors for this task."

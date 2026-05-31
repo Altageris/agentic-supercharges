@@ -1,0 +1,3 @@
+display_name: Find Screenshot
+short_description: Find and open the latest screenshot from the exact local capture folder
+default_prompt: Use this skill when the user asks to find, reopen, or inspect the latest screenshot from the exact Windows capture folder in this workspace. Resolve the newest image in C:\Users\jeanj\OneDrive\Images\Captures d’écran and open it with view_image.

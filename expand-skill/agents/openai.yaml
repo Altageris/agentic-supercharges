@@ -1,0 +1,4 @@
+interface:
+  display_name: "Expand Skill"
+  short_description: "Memory-guided scope expansion"
+  default_prompt: "Use $expand-skill to find relevant memory anchors, identify the immediate action surface, and start the smallest safe operation."

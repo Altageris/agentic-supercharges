@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hallucination Check"
+  short_description: "Verify claims against current evidence"
+  default_prompt: "Use $hallucination-check to audit the last answer for unsupported claims."

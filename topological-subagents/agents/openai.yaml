@@ -1,0 +1,4 @@
+interface:
+  display_name: "Topological Subagents"
+  short_description: "Coordinate mini subagents in dependency order."
+  default_prompt: "Use this skill to decompose work into dependency-ordered branches, delegate independent branches to mini subagents by default, preserve existing agent context when possible, and synthesize shared choke points before implementation."

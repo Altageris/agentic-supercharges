@@ -1,0 +1,4 @@
+interface:
+  display_name: "Branch Artifacts"
+  short_description: "Persist compact branch-local task maps."
+  default_prompt: "Use $branch-artifacts to store or reload compact branch-local topology, seams, ownership, validation, and feedback state."

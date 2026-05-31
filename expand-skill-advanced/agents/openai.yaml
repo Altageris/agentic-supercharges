@@ -1,0 +1,4 @@
+interface:
+  display_name: "Experience Expand"
+  short_description: "Use completed experience to govern scope"
+  default_prompt: "Use $expand-skill-advanced to find the closest completed precedent, extract the proven local pattern, expand only where evidence improves correctness, speed, or safety, then identify one next actionable surface. Use $exp for the dedicated /exp command."

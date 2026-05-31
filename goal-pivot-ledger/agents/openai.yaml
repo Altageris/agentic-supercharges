@@ -1,0 +1,4 @@
+interface:
+  display_name: "Goal Pivot Ledger"
+  short_description: "Track goal pivots and reroute on dependency"
+  default_prompt: "Use $goal-pivot-ledger to record a goal change, enforce dependency rules, and launch the accepted pivot through subagent-coordinator."

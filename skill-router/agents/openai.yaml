@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Router"
+  short_description: "Pick the right skill and sequence first"
+  default_prompt: "Use $skill-router to choose the smallest useful skill set and execution order for this task."

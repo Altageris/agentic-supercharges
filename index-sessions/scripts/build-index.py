@@ -1,223 +1,166 @@
-#!/usr/bin/env python3
-"""
-Build ~/.claude/session-index.ndjson + ~/.claude/session-index.idx
+﻿#!/usr/bin/env python3
+"""Build a compact searchable index for Codex sessions."""
 
-Index format:
-  .ndjson  — one JSON object per line, one session per line
-  .idx     — binary sidecar: magic(4) + version(4) + count(4) + N×(hash_u32 + offset_u64)
-             sorted by hash for binary search
+from __future__ import annotations
 
-Each NDJSON entry:
-  id, project, started, topics, artifacts, skills_used, preview (first 2 msgs), resume
-"""
-
-import json, os, struct, sys
+import json
+import os
+import re
+import struct
+import sys
+import time
 from pathlib import Path
-from hashlib import md5
+from typing import Any
 
-HOME = str(Path.home())
-PROJECTS_DIR = os.path.join(HOME, '.claude', 'projects')
-NDJSON_PATH  = os.path.join(HOME, '.claude', 'session-index.ndjson')
-IDX_PATH     = os.path.join(HOME, '.claude', 'session-index.idx')
-MAGIC        = b'SIDX'
-VERSION      = 1
-MAX_SESSIONS = 90  # rolling window: days
+HOME = Path.home()
+CODEX_DIR = HOME / ".codex"
+SESSIONS_DIR = CODEX_DIR / "sessions"
+NDJSON_PATH = CODEX_DIR / "session-index.ndjson"
+IDX_PATH = CODEX_DIR / "session-index.idx"
+MAGIC = b"SIDX"
+VERSION = 1
+DEFAULT_DAYS = 90
+
+PATH_RE = re.compile(r"[A-Za-z]:\\[^\s\"'<>|]+|(?:[\w.-]+/)+[\w.-]+")
+SKILL_RE = re.compile(r"(?:Using|use|uses)\s+`?([a-z0-9][a-z0-9_.:-]*?)`?\s+(?:skill|because)|\$([a-z0-9][a-z0-9_.:-]*)", re.I)
 
 
-def fnv32(s: str) -> int:
-    h = 0x811c9dc5
-    for c in s.encode():
-        h ^= c
+def fnv32(text: str) -> int:
+    h = 0x811C9DC5
+    for byte in text.encode("utf-8", "ignore"):
+        h ^= byte
         h = (h * 0x01000193) & 0xFFFFFFFF
     return h
 
 
-def decode_project_path(encoded: str) -> str:
-    home_prefix = HOME.lstrip('/').replace('/', '-')
-    suffix = encoded.lstrip('-')
-    if suffix.startswith(home_prefix):
-        suffix = suffix[len(home_prefix):].lstrip('-')
-
-    def _decode(base, parts):
-        if not parts:
-            return base if os.path.exists(base) else None
-        for i in range(1, len(parts) + 1):
-            seg = '-'.join(parts[:i])
-            cand = os.path.join(base, seg)
-            if os.path.isdir(cand):
-                r = _decode(cand, parts[i:])
-                if r is not None:
-                    return r
-        return None
-
-    return _decode(HOME, suffix.split('-')) or HOME
+def text_blocks(value: Any) -> list[str]:
+    out: list[str] = []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("input_text") or item.get("output_text")
+                if isinstance(text, str):
+                    out.append(text)
+            elif isinstance(item, str):
+                out.append(item)
+    return out
 
 
-def extract_session(path: str) -> dict | None:
-    msgs, skills, artifacts = [], set(), set()
+def payload_text(payload: dict[str, Any]) -> list[tuple[str, str]]:
+    role = payload.get("role") or payload.get("type") or "event"
+    content = payload.get("content")
+    if content is None and "message" in payload:
+        content = payload["message"]
+    return [(str(role), text) for text in text_blocks(content)]
+
+
+def extract_session(path: Path) -> dict[str, Any] | None:
+    sid = path.stem.replace("rollout-", "")
+    cwd = str(HOME)
     started = None
+    user_messages: list[str] = []
+    recent_messages: list[str] = []
+    skills: set[str] = set()
+    artifacts: set[str] = set()
 
-    with open(path, 'rb') as f:
-        for raw in f:
+    with path.open("r", encoding="utf-8", errors="ignore") as handle:
+        for raw in handle:
             try:
                 obj = json.loads(raw)
             except Exception:
                 continue
 
-            ts = obj.get('timestamp')
-            if ts and started is None:
-                started = ts
+            timestamp = obj.get("timestamp")
+            if timestamp and started is None:
+                started = timestamp
 
-            t = obj.get('type', '')
+            typ = obj.get("type")
+            payload = obj.get("payload") if isinstance(obj.get("payload"), dict) else {}
 
-            # User messages — collect all for recent_preview, no early break
-            if t == 'user':
-                c = obj.get('message', {}).get('content', '')
-                blocks = c if isinstance(c, list) else [{'type': 'text', 'text': c}]
-                for b in blocks:
-                    if isinstance(b, dict) and b.get('type') == 'text':
-                        text = b['text']
-                        if not text.startswith('<') and len(text) > 10:
-                            msgs.append(text[:200])
-                            break
+            if typ == "session_meta":
+                meta = payload
+                sid = meta.get("id") or sid
+                cwd = meta.get("cwd") or cwd
+                started = meta.get("timestamp") or started
+                continue
 
-            # Tool use → skill invocations + file artifacts
-            if t == 'assistant':
-                content = obj.get('message', {}).get('content', [])
-                if isinstance(content, list):
-                    for block in content:
-                        if not isinstance(block, dict):
-                            continue
-                        if block.get('type') == 'tool_use':
-                            name = block.get('name', '')
-                            inp  = block.get('input', {})
-                            if name == 'Skill':
-                                s = inp.get('skill', '')
-                                if s:
-                                    skills.add(s)
-                            if name in ('Read', 'Write', 'Edit'):
-                                fp = inp.get('file_path', '')
-                                if fp:
-                                    artifacts.add(os.path.basename(fp))
+            for role, text in payload_text(payload):
+                clean = " ".join(text.split())
+                if not clean or clean.startswith("<"):
+                    continue
+                recent_messages.append(clean[:300])
+                if role == "user" or typ in {"user_message", "turn_context"}:
+                    user_messages.append(clean[:300])
+                for match in SKILL_RE.finditer(clean):
+                    skill = match.group(1) or match.group(2)
+                    if skill:
+                        skills.add(skill.lower())
+                for match in PATH_RE.finditer(clean):
+                    artifacts.add(os.path.basename(match.group(0).rstrip(".,):]")))
 
-    if not msgs:
+            if typ == "response_item" and isinstance(payload, dict):
+                name = payload.get("name") or payload.get("tool_name")
+                if isinstance(name, str) and "skill" in name.lower():
+                    skills.add(name)
+                args = payload.get("arguments") or payload.get("input")
+                if isinstance(args, dict):
+                    for key in ("path", "file_path", "command"):
+                        val = args.get(key)
+                        if isinstance(val, str):
+                            artifacts.add(os.path.basename(val.rstrip(".,):]")))
+
+    preview_source = user_messages or recent_messages
+    if not preview_source:
         return None
 
-    sid     = os.path.basename(path).replace('.jsonl', '')
-    encoded = os.path.basename(os.path.dirname(path))
-    project = decode_project_path(encoded)
-    resume  = f'cd {project} && claude --resume {sid}'
-
-    # Derive topics: first msg words, skill names, artifact names
-    topics = list(skills)[:5] + list(artifacts)[:5]
-
+    topics = sorted(skills)[:8] + sorted(a for a in artifacts if a)[:8]
     return {
-        'id':             sid,
-        'project':        project,
-        'started':        started,
-        'topics':         topics,
-        'artifacts':      sorted(artifacts)[:10],
-        'skills_used':    sorted(skills),
-        'preview':        msgs[:2],
-        'recent_preview': msgs[-5:] if len(msgs) > 2 else [],
-        'resume':         resume,
+        "id": sid,
+        "project": cwd,
+        "started": started,
+        "topics": topics,
+        "artifacts": sorted(a for a in artifacts if a)[:20],
+        "skills_used": sorted(skills),
+        "preview": preview_source[:2],
+        "recent_preview": preview_source[-5:],
+        "resume": f"cd {cwd} && codex resume {sid}",
+        "jsonl": str(path),
     }
 
 
-def load_existing_index() -> dict[str, int]:
-    """Return {session_id: mtime_ns} for already-indexed sessions."""
-    known = {}
-    if not os.path.exists(NDJSON_PATH):
-        return known
-    with open(NDJSON_PATH) as f:
-        for line in f:
-            try:
-                obj = json.loads(line)
-                sid = obj.get('id')
-                if sid:
-                    known[sid] = True
-            except Exception:
-                pass
-    return known
-
-
-def find_session_files(days: int) -> list[str]:
-    import time
+def find_session_files(days: int) -> list[Path]:
     cutoff = time.time() - days * 86400
-    results = []
-    for root, dirs, files in os.walk(PROJECTS_DIR):
-        dirs[:] = [d for d in dirs if d != 'subagents']
-        depth = root.replace(PROJECTS_DIR, '').count(os.sep)
-        if depth > 1:
-            dirs[:] = []
-            continue
-        for f in files:
-            if f.endswith('.jsonl'):
-                fp = os.path.join(root, f)
-                if os.path.getmtime(fp) >= cutoff:
-                    results.append(fp)
-    return results
+    if not SESSIONS_DIR.exists():
+        return []
+    return [p for p in SESSIONS_DIR.rglob("*.jsonl") if p.stat().st_mtime >= cutoff]
 
 
-def write_index(entries: list[dict]):
-    # Write NDJSON and collect byte offsets
-    offsets = []  # list of (hash_u32, offset_u64)
-    with open(NDJSON_PATH, 'w') as f:
+def write_index(entries: list[dict[str, Any]]) -> None:
+    offsets: list[tuple[int, int]] = []
+    with NDJSON_PATH.open("w", encoding="utf-8") as handle:
         for entry in entries:
-            offset = f.tell()
-            line = json.dumps(entry, separators=(',', ':'))
-            f.write(line + '\n')
-            offsets.append((fnv32(entry['id']), offset))
-
-    # Sort by hash for binary search
-    offsets.sort(key=lambda x: x[0])
-
-    # Write binary idx: magic(4) + version(4) + count(4) + N×(u32 hash + u64 offset)
-    with open(IDX_PATH, 'wb') as f:
-        f.write(MAGIC)
-        f.write(struct.pack('>II', VERSION, len(offsets)))
-        for h, off in offsets:
-            f.write(struct.pack('>IQ', h, off))
-
-    print(f'Indexed {len(entries)} sessions → {NDJSON_PATH}')
-    print(f'Sidecar → {IDX_PATH} ({len(offsets) * 12 + 12} bytes)')
+            offset = handle.tell()
+            handle.write(json.dumps(entry, ensure_ascii=False, separators=(",", ":")) + "\n")
+            offsets.append((fnv32(entry["id"]), offset))
+    offsets.sort(key=lambda item: item[0])
+    with IDX_PATH.open("wb") as handle:
+        handle.write(MAGIC)
+        handle.write(struct.pack(">II", VERSION, len(offsets)))
+        for hashed, offset in offsets:
+            handle.write(struct.pack(">IQ", hashed, offset))
+    print(f"Indexed {len(entries)} Codex sessions -> {NDJSON_PATH}")
+    print(f"Sidecar -> {IDX_PATH} ({len(offsets) * 12 + 12} bytes)")
 
 
-def main():
-    days = int(sys.argv[1]) if len(sys.argv) > 1 else MAX_SESSIONS
-    print(f'Scanning sessions from last {days} days...')
-
-    files = find_session_files(days)
-    print(f'Found {len(files)} session files')
-
-    known = load_existing_index()
-    entries = []
-
-    for fp in sorted(files, key=os.path.getmtime, reverse=True):
-        sid = os.path.basename(fp).replace('.jsonl', '')
-        if sid in known:
-            continue
-        entry = extract_session(fp)
-        if entry:
-            entries.append(entry)
-
-    if not entries:
-        print('No new sessions to index.')
-        return
-
-    # Merge with existing (append new to front)
-    existing = []
-    if os.path.exists(NDJSON_PATH):
-        with open(NDJSON_PATH) as f:
-            for line in f:
-                try:
-                    existing.append(json.loads(line))
-                except Exception:
-                    pass
-
-    all_entries = entries + existing
-    write_index(all_entries)
+def main() -> None:
+    days = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_DAYS
+    files = sorted(find_session_files(days), key=lambda p: p.stat().st_mtime, reverse=True)
+    print(f"Scanning {len(files)} Codex session files from last {days} days...")
+    entries = [entry for path in files if (entry := extract_session(path))]
+    write_index(entries)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Typeflow Map"
+  short_description: "Map type seams and normalized data flows."
+  default_prompt: "Use $typeflow-map to trace raw-to-normalized type seams, union-field accesses, and downstream consumers."
